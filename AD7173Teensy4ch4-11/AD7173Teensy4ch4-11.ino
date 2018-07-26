@@ -8,7 +8,7 @@
 #include <Wire.h>
 
 #define HWSERIAL Serial1
-/**** df 27 june 2018 - restored serial output (data)
+/**** kjs 19 july 2018 - undo restored serial output (data)
 * #define HWSERIAL Serial
 ****/
 

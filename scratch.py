@@ -40,7 +40,7 @@ def main():
 
 if __name__ == '__main__':
     #s = serial.Serial("/dev/ttyACM0", baudrate=230400)
-    s = serial.Serial("/dev/rfcomm0", baudrate=230400)
+    s = serial.Serial("/dev/rfcomm4", baudrate=230400)
     try:
         main()
     except Exception as e:
