@@ -1,7 +1,10 @@
+import argparse
 import asyncio
+import os
 
 import serial
 import websockets
+
 
 def offsetBinaryToInt(hexstr, offset):
     if len(hexstr) != 6:
@@ -13,8 +16,20 @@ def offsetBinaryToInt(hexstr, offset):
         encoded = not_encoded - 2**offset
     return encoded
 
+
 def adc2volts(i):
     return i * 5 / 2**23
+
+
+def findPath():
+    if args.path:
+        return args.path
+    basepath = "/dev/rfcomm"
+    for i in range(5):
+        testpath = basepath + str(i)
+        if os.path.exists(testpath):
+            return testpath
+
 
 async def brains(websocket, path):
     """
@@ -22,7 +37,8 @@ async def brains(websocket, path):
 
     F80F19\t7801F4\rF80F19\t7801F4\rF80F19\t7801F4\r
     """
-    s = serial.Serial("/dev/rfcomm0", baudrate=230400)
+    brainduino_path = findPath()
+    s = serial.Serial(brainduino_path, baudrate=230400)
     s.flush()
     channels = (bytearray(6), bytearray(6))
     hex_ctr = 0
@@ -45,7 +61,16 @@ async def brains(websocket, path):
                 channels[1][hex_ctr % 6] = b
             hex_ctr += 1
 
-start_server = websockets.serve(brains, '127.0.0.1', 5678)
 
-asyncio.get_event_loop().run_until_complete(start_server)
-asyncio.get_event_loop().run_forever()
+def main():
+    start_server = websockets.serve(brains, '127.0.0.1', 5678)
+
+    asyncio.get_event_loop().run_until_complete(start_server)
+    asyncio.get_event_loop().run_forever()
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--path", help="path to the brainduino device")
+    args = parser.parse_args()
+    main()
