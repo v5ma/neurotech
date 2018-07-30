@@ -12,3 +12,11 @@ Setup
 =====
 * Requires Python 3.5+
 * Depends on websockets and pyserial libraries
+
+
+
+Setup for EEG reading instrument
+Steps to recreate variance with 3d modeling a-frame: 
+ - Connect to Bluetooth
+ - run main.py
+ - run web page file:///home/noisebridge/brainduino/brainduino-web-ui/webxr1.html
