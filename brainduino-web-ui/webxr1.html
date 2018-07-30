@@ -34,10 +34,19 @@
 	ws.onmessage = function (event) {
 		console.log(event.data);
 		var splitted = event.data.split(" ")
-		console.log(event)
+		// console.log(event)
 		console.log(splitted)
-		sphere.object3D.position.set("0 " + 1.25 + " -5");
-		box.object3D.position.set("-1 " + splitted[1] + " -4");
+		var a = splitted[0]
+		var b = splitted[1]
+		
+		coordinsph = "-1 " + a + " -3"
+		coordinbox = "0 " + b + " -5"
+		console.log(coordinsph)
+		console.log(coordinbox)
+		sphere.object3D.position.set(coordinsph)
+		box.object3D.position.set(coordinbox)
+		//sphere.object3D.position.set("-1 0.5 -3") + (0 splitted[0] 0");
+		//box.object3D.position.set("0 1.25 -5") + (splitted[1] 0 0");
 	};
         
         // y (0 - 4))
