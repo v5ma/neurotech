@@ -25,7 +25,7 @@
         moveShapes = function(boxY,sphereY,cylY){
         
           // box.object3D.position.set(-1 '+boxY+' -3);
-          // sphere.object3D.position.set(0 1.25 -5);
+          
           // cyl.object3D.position.set(1 0.75 -3);
 
         }
@@ -36,6 +36,7 @@
 		var splitted = event.data.split(" ")
 		console.log(event)
 		console.log(splitted)
+		sphere.object3D.position.set(0 splitted[0] splitted[1]);
 	};
         
         // y (0 - 4))
