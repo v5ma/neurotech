@@ -32,8 +32,8 @@
       
         var ws = new WebSocket("ws://127.0.0.1:5678/")
 	ws.onmessage = function (event) {
-		console.log(event.data)
-		var splitted = split(event.data, " ")
+		console.log(event.data);
+		var splitted = event.data.split(" ")
 		console.log(event)
 		console.log(splitted)
 	};
