@@ -39,8 +39,8 @@
 		var a = (splitted[0] / 10000) + 1.25
 		var b = (splitted[1] / 1000) + .5
 		
-		coordinsph = "0 " + a + " -5"
-		coordinbox = "-1 " + b + " -3"
+		coordinsph = {x: 0, y: a, z: -5}
+		coordinbox = {x: -1, y: b, z: -3}
 		console.log(coordinsph)
 		console.log(coordinbox)
 		sphere.object3D.position.set(coordinsph)
