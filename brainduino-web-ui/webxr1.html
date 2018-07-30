@@ -24,15 +24,18 @@
       
         moveShapes = function(boxY,sphereY,cylY){
         
-          // box.object3D.position.set(-1 '+boxY+' -3);
+          box.object3D.position.set(-1 '+boxY+' -3);
           // sphere.object3D.position.set(0 1.25 -5);
           // cyl.object3D.position.set(1 0.75 -3);
 
         }
       
-      var ws = new WebSocket("ws://127.0.0.1:5678/")
+        var ws = new WebSocket("ws://127.0.0.1:5678/")
 	ws.onmessage = function (event) {
 		console.log(event.data)
+		var splitted = split(event.data, " ")
+		console.log(event)
+		console.log(splitted)
 	};
         
         // y (0 - 4))
