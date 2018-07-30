@@ -36,8 +36,8 @@
 		var splitted = event.data.split(" ")
 		// console.log(event)
 		console.log(splitted)
-		var a = splitted[0]
-		var b = splitted[1]
+		var a = (splitted[0] / 10000) + 1.25
+		var b = (splitted[1] / 1000) + .5
 		
 		coordinsph = "0 " + a + " -5"
 		coordinbox = "-1 " + b + " -3"
