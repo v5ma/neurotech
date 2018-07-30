@@ -21,32 +21,33 @@
         box = document.getElementById("box")
         sphere = document.getElementById("sphere")
         cyl = document.querySelector("cyl")
-      
-        moveShapes = function(boxY,sphereY,cylY){
-        
-          // box.object3D.position.set(-1 '+boxY+' -3);
-          
-          // cyl.object3D.position.set(1 0.75 -3);
-
-        }
-      
-        var ws = new WebSocket("ws://127.0.0.1:5678/")
+            
+        //
+	var ws = new WebSocket("ws://127.0.0.1:5678/")
 	ws.onmessage = function (event) {
 		console.log(event.data);
-		var splitted = event.data.split(" ")
-		// console.log(event)
-		// console.log(splitted)
-		var a = (splitted[0] * 1) + .5
-		var b = (splitted[1] / 1.5) + 1.25
 		
-		coordinsph = {x: 0, y: a, z: -5}
-		coordinbox = {x: -1, y: b, z: -3}
-		console.log(a)
-		// console.log(coordinbox)
-		sphere.object3D.position.x = a
-		box.object3D.position.x = b
-		//sphere.object3D.position.set("-1 0.5 -3") + (0 splitted[0] 0");
-		//box.object3D.position.set("0 1.25 -5") + (splitted[1] 0 0");
+		// created an array here to read out data from the arduino chip.
+		// We split with a space. The first value is the right reader, 
+		the second is the left reader.
+		var eeg_readings = event.data.split(" ")
+	
+		
+		
+		// changing the string to a decimal by dividing or 
+		// multiplying the strings given by our raw data
+		// there is too much variance. Division, modifies the range of physical 
+		// bounds variance but not the time update variance
+		var l = (eeg_readings[0] * 1) + .5
+		var r = (eeg_readings[1] / 1.5) + 1.25
+		
+		coordinsph = {x: 0, y: l, z: -5}
+		coordinbox = {x: -1, y: r, z: -3}
+		console.log(l)
+		console.log(r)
+		
+		sphere.object3D.position.x = l
+		box.object3D.position.x = r
 	};
         
         // y (0 - 4))
