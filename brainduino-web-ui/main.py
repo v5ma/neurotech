@@ -1,6 +1,8 @@
 import argparse
 import asyncio
+import http.server
 import os
+import socketserver
 
 import serial
 import websockets
@@ -37,11 +39,9 @@ async def brains(websocket, path):
 
     F80F19\t7801F4\rF80F19\t7801F4\rF80F19\t7801F4\r
     """
-    brainduino_path = findPath()
-    s = serial.Serial(brainduino_path, baudrate=230400)
-    s.flush()
+    print("brains")
     channels = (bytearray(6), bytearray(6))
-    hex_ctr = 0
+    ctr = 0
     while True:
         bs = s.read(64)
         for b in bs:
@@ -52,20 +52,31 @@ async def brains(websocket, path):
                     await websocket.send("%s %s" % (c1, c2))
                 except Exception:
                     await websocket.send("%s %s" % channels)
-                hex_ctr = 0
+                ctr = 0
             elif b == ord('\t'):
                 continue
-            elif hex_ctr < 6:
-                channels[0][hex_ctr] = b
-            elif hex_ctr > 6:
-                channels[1][hex_ctr % 6] = b
-            hex_ctr += 1
+            elif ctr < 6:
+                channels[0][ctr] = b
+                ctr += 1
+            elif ctr >= 6:
+                channels[1][ctr % 6] = b
+                ctr += 1
+
+
+async def httpd():
+    handler = http.server.SimpleHTTPRequestHandler
+    port = 8080
+    httpd = socketserver.TCPServer(('127.0.0.1', port), handler)
+    print("serving at port", port)
+    # await httpd.serve_forever()
 
 
 def main():
     start_server = websockets.serve(brains, '127.0.0.1', 5678)
 
     asyncio.get_event_loop().run_until_complete(start_server)
+    # asyncio.get_event_loop().run_until_complete(httpd())
+
     asyncio.get_event_loop().run_forever()
 
 
@@ -73,4 +84,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--path", help="path to the brainduino device")
     args = parser.parse_args()
-    main()
+    brainduino_path = findPath()
+    s = serial.Serial(brainduino_path, baudrate=230400)
+    if s.isOpen():
+        print("Connected to brainduino at path=[%s]" % brainduino_path)
+        s.write(bytes("S", "utf-8"))
+        s.write(bytes("U", "utf-8"))
+        main()
+    else:
+        print("Failed to connect to brainduino. Exiting now.")
+
