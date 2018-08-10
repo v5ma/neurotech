@@ -3,7 +3,6 @@ import asyncio
 import http.server
 import os
 import socketserver
-
 import serial
 import websockets
 
@@ -63,21 +62,14 @@ async def brains(websocket, path):
                 ctr += 1
 
 
-async def httpd():
-    handler = http.server.SimpleHTTPRequestHandler
-    port = 8080
-    httpd = socketserver.TCPServer(('127.0.0.1', port), handler)
-    print("serving at port", port)
-    # await httpd.serve_forever()
+async def brainSocketClient():
+    async with websockets.connect('ws://localhost:8765') as websocket:
+        brain(websocket, 5678)
+    asyncio.get_event_loop().run_forever()
 
 
 def main():
-    start_server = websockets.serve(brains, '127.0.0.1', 5678)
-
-    asyncio.get_event_loop().run_until_complete(start_server)
-    # asyncio.get_event_loop().run_until_complete(httpd())
-
-    asyncio.get_event_loop().run_forever()
+    asyncio.get_event_loop().run_until_complete(brainSocketClient())
 
 
 if __name__ == '__main__':
@@ -93,4 +85,3 @@ if __name__ == '__main__':
         main()
     else:
         print("Failed to connect to brainduino. Exiting now.")
-
