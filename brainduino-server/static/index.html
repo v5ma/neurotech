@@ -1,0 +1,114 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Hello, WebVR! • A-Frame</title>
+    <meta name="description" content="Hello, WebVR! • A-Frame">
+<style>
+.link{
+}
+</style>
+
+    <script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>
+	
+
+  
+  </head>
+  <body>
+    <a-scene background="color: #ECECEC">
+      <a-box id="box" position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9" shadow class="link"></a-box>
+      <a-box id="box2" position="-2 -0.5 -3" rotation="0 45 0" color="#4CffD9" shadow class="link"></a-box>
+      <a-box id="box3" position="-2 -0.5 -3" rotation="0 45 0" color="#CC9fD9" shadow class="link"></a-box>
+      <a-sphere id="sphere" position="2 -1.25 5" radius="1.25" color="#EF2D5E" shadow class="link"></a-sphere>
+      <a-sphere id="sphere2" position="-2 -3 -4" radius="1" color="#EF2Dff" shadow class="link"></a-sphere>
+      <a-sphere id="sphere3" position="5 3 -5" radius="1.25" color="#EF2D5E" shadow class="link"></a-sphere>
+      <a-cylinder id="cyl" position="-1 0.75 5" radius="0.5" height="1.5" color="#FFC65D" shadow class="link"></a-cylinder>
+      <a-cylinder id="cyl2" position="2 3.1 -4" radius="0.5" height="1.5" color="#00C65D" shadow class="link"></a-cylinder>
+      <a-cylinder id="cyl3" position="1 6.75 -1" radius="0.5" height="1.5" color="#FFff5D" shadow class="link"></a-cylinder>
+      <a-plane position="0 0 -4" rotation="-90 0 0" width="4" height="4" color="#7BC8A4" shadow class="link"></a-plane>
+      
+      
+	
+      <!-- Camera + cursor. -->
+<a-entity camera look-controls>
+        <a-cursor id="cursor"
+          animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150"
+          animation__fusing="property: fusing; startEvents: fusing; from: 1 1 1; to: 0.1 0.1 0.1; dur: 1500"
+          event-set__1="_event: mouseenter; color: springgreen"
+          event-set__2="_event: mouseleave; color: black"
+          event-set__3="_event: click; color: red"
+          fuse="true"
+          raycaster="objects: .link"></a-cursor>
+      </a-entity>
+	  
+	  
+	  </a-scene>
+    
+    <script>
+   	// The id references a single element in the above html
+        box = document.getElementById("box")
+	box2 = document.getElementById("box2")
+	box3 = document.getElementById("box3")
+        sphere = document.getElementById("sphere")
+	sphere2 = document.getElementById("sphere2")
+	sphere3 = document.getElementById("sphere3")
+        cyl = document.getElementById("cyl")
+	cyl2 = document.getElementById("cyl2")
+	cyl3 = document.getElementById("cyl3")
+  
+        // provides a stream of data after main.py has been run.
+	var ws = new WebSocket("ws://alpine-unicorn.noise:8080/ws")
+	ws.onmessage = function (event) {
+		data = JSON.parse(event.data)
+		
+		// created an array here to read out data from the arduino chip.
+		// We split with a space. The first value is the right reader, 
+		// the second is the left reader.
+		var eeg_readings = data.Channels
+		// console.log(eeg_readings)
+
+		var fft_readings = data.FFT
+		// console.log(fft_readings)
+		
+		// changing the string to a decimal by dividing or 
+		// multiplying the strings given by our raw data
+		// there is too much variance. Division, modifies the range of physical 
+		// bounds variance but not the time update variance
+		// var l = (eeg_readings[0] * 8)
+		// var r = (eeg_readings[1] * 8)
+		var l = fft_readings[10]
+		var r = fft_readings[5]
+
+		// console.log(l)
+		// console.log(r)
+		
+		sphere.object3D.position.x = l
+		sphere2.object3D.position.y = r
+		sphere3.object3D.position.x = l
+		box.object3D.position.y = r
+		box2.object3D.position.x = r
+		box3.object3D.position.z = l
+		cyl.object3D.position.y = r
+		cyl2.object3D.position.x = l
+		cyl3.object3D.position.z = r
+	
+	};
+
+document.querySelector('a-scene'),addEventListener('raycaster-intersected', function (e) {
+      console.log(`${e.target.id} was hit.`);
+    });
+        
+        // y (0 - 4))
+        
+        // boxY = Math.random()*4
+        // sphereY = Math.random()*4
+        // cylY = Math.random()*4
+        
+        // moveShapes(boxY,sphereY,cylY)
+        
+     
+      
+    </script>
+  </body>
+</html>

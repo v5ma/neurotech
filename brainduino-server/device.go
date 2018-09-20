@@ -18,6 +18,7 @@ type Sample struct {
 	Channels       []float64
 	Timestamp      time.Time
 	SequenceNumber uint
+	FFT            []float64
 }
 
 type Brainduino struct {
@@ -53,6 +54,7 @@ func (b *Brainduino) offsetBinaryToInt(hexstr []byte) int {
 }
 
 func (b *Brainduino) readloop() {
+	// Needs to be more resillient to all of the data that the brainduino sends
 	buf := make([]byte, 42)
 	chan0 := make([]byte, b.wordsize)
 	chan1 := make([]byte, b.wordsize)
@@ -91,28 +93,42 @@ func (b *Brainduino) readloop() {
 			} else if val == '\t' {
 				firsthalf = false
 				ctr = 0
-			} else if firsthalf {
+			} else if firsthalf && b.isdatabyte(val) {
 				chan0[ctr] = val
 				ctr++
-			} else {
-				chan1[ctr] = val
+			} else if b.isdatabyte(val) {
+				chan1[ctr%6] = val
 				ctr++
 			}
 		}
 	}
+}
 
+func (b *Brainduino) isdatabyte(bb byte) bool {
+	return (bb == '\x30' ||
+		bb == '\x31' ||
+		bb == '\x32' ||
+		bb == '\x33' ||
+		bb == '\x34' ||
+		bb == '\x35' ||
+		bb == '\x36' ||
+		bb == '\x37' ||
+		bb == '\x38' ||
+		bb == '\x39' ||
+		bb == '\x40' ||
+		bb == '\x41' ||
+		bb == '\x42' ||
+		bb == '\x43' ||
+		bb == '\x44' ||
+		bb == '\x45' ||
+		bb == '\x46')
 }
 
 func (b *Brainduino) broadcast() {
 	for {
 		sample := <-b.readchan
-		for name, listener := range b.listeners {
-			select {
-			case listener <- sample:
-				continue
-			default:
-				fmt.Printf("Listener stuck: %s\n", name)
-			}
+		for _, listener := range b.listeners {
+			listener <- sample
 		}
 	}
 }
@@ -127,7 +143,12 @@ func NewBrainduino(path string) (Device, error) {
 		BaudRate:              230400,
 		InterCharacterTimeout: 100, // In milliseconds
 		MinimumReadSize:       14,  // In bytes
+		DataBits:              8,
+		StopBits:              1,
 	})
+	if err != nil {
+		return nil, err
+	}
 	c := make(chan Sample)
 	brainduino := Brainduino{
 		ReadWriteCloser: device,
@@ -135,10 +156,11 @@ func NewBrainduino(path string) (Device, error) {
 		wordsize:        6,
 		numchan:         2,
 		readchan:        c,
+		listeners:       make(map[string]chan Sample),
 	}
 	go brainduino.readloop()
 	go brainduino.broadcast()
-	return brainduino, err
+	return brainduino, nil
 }
 
 func newMockBrainduino(datastream chan byte) (*Brainduino, error) {

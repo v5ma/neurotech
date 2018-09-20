@@ -240,6 +240,17 @@
   revision = "82c7118e8ccf7403d4860175d97bb635e8e28239"
 
 [[projects]]
+  branch = "master"
+  digest = "1:a058b48ec9fad1403482552ed04666f16a244b05b6968a2bc43a6cf6ebc350a8"
+  name = "github.com/mjibson/go-dsp"
+  packages = [
+    "dsputils",
+    "fft",
+  ]
+  pruneopts = "UT"
+  revision = "11479a337f1259210b7c8f93f7bf2b0cc87b066e"
+
+[[projects]]
   digest = "1:33422d238f147d247752996a26574ac48dcf472976eda7f5134015f06bf16563"
   name = "github.com/modern-go/concurrent"
   packages = ["."]
@@ -357,6 +368,7 @@
     "github.com/jacobsa/go-serial/serial",
     "github.com/kataras/iris",
     "github.com/kataras/iris/websocket",
+    "github.com/mjibson/go-dsp/fft",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
