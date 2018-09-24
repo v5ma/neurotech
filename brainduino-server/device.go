@@ -4,30 +4,40 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"math/rand"
 	"time"
 
-	"github.com/jacobsa/go-serial/serial"
+	pubsub "github.com/dustin/go-broadcast"
+	"github.com/mjibson/go-dsp/fft"
 )
 
 type Device interface {
 	io.ReadWriteCloser
-	RegisterListener(string, chan Sample)
+	RegisterRawListener(chan<- interface{})
+	RegisterFFTListener(chan<- interface{})
 }
 
 type Sample struct {
+	Name           string
 	Channels       []float64
 	Timestamp      time.Time
 	SequenceNumber uint
-	FFT            []float64
+}
+
+type FFTData struct {
+	Name           string
+	Channels       [][]float64
+	Timestamp      time.Time
+	SequenceNumber uint
 }
 
 type Brainduino struct {
 	io.ReadWriteCloser
-	offsethighbit int
-	numchan       int
-	wordsize      int
-	readchan      chan Sample
-	listeners     map[string]chan Sample
+	offsethighbit  int
+	numchan        int
+	wordsize       int
+	rawBroadcaster pubsub.Broadcaster
+	fftBroadcaster pubsub.Broadcaster
 }
 
 func (b *Brainduino) adcnorm(raw int) float64 {
@@ -40,7 +50,7 @@ func (b *Brainduino) offsetBinaryToInt(hexstr []byte) int {
 	buf := bytes.NewBuffer(hexstr)
 	_, err := fmt.Fscanf(buf, "%x", &x)
 	if err != nil {
-		fmt.Printf("Error scanning buffer in offsetBinaryToInt: %s\n", err)
+		fmt.Printf("Error scanning buffer %v in offsetBinaryToInt: %s\n", hexstr, err)
 		return int(b.offsethighbit)
 	}
 
@@ -53,19 +63,47 @@ func (b *Brainduino) offsetBinaryToInt(hexstr []byte) int {
 	return x
 }
 
+func (b *Brainduino) fftloop() {
+	ctr := 0
+	var seqnum uint
+	fftdata0 := make([]float64, 250)
+	fftdata1 := make([]float64, 250)
+	rawlistener := make(chan interface{})
+	b.rawBroadcaster.Register(rawlistener)
+	for {
+		s := <-rawlistener
+		sample := s.(Sample)
+		fftdata0[ctr%250] = sample.Channels[0]
+		fftdata1[ctr%250] = sample.Channels[1]
+		if ctr%250 == 0 {
+			fftd := FFTData{
+				Name:           "fft",
+				Channels:       make([][]float64, 2),
+				SequenceNumber: seqnum,
+				Timestamp:      time.Now(),
+			}
+			fftd.Channels[0] = abs(fft.FFTReal(fftdata0))[:124]
+			fftd.Channels[1] = abs(fft.FFTReal(fftdata1))[:124]
+			b.fftBroadcaster.Submit(fftd)
+			seqnum++
+		}
+		ctr++
+
+	}
+}
+
 func (b *Brainduino) readloop() {
-	// Needs to be more resillient to all of the data that the brainduino sends
-	buf := make([]byte, 42)
-	chan0 := make([]byte, b.wordsize)
-	chan1 := make([]byte, b.wordsize)
+	buf := make([]byte, 14)
+	chans := make([][]byte, b.numchan)
+	for i := 0; i < b.numchan; i++ {
+		chans[i] = make([]byte, b.wordsize)
+	}
 
 	firsthalf := true
 	ctr := 0
 
 	ts := time.Now()
 	var seqnum uint
-	var chan0raw int
-	var chan1raw int
 	for {
 		n, err := b.Read(buf)
 		ts = time.Now()
@@ -76,28 +114,27 @@ func (b *Brainduino) readloop() {
 		for _, val := range buf[:n] {
 			if val == '\r' {
 				sample := Sample{
-					Channels:       make([]float64, 0),
+					Name:           "sample",
+					Channels:       make([]float64, b.numchan),
 					Timestamp:      ts,
 					SequenceNumber: seqnum,
 				}
-				chan0raw = b.offsetBinaryToInt(chan0)
-				chan1raw = b.offsetBinaryToInt(chan1)
-				sample.Channels = append(sample.Channels, b.adcnorm(chan0raw))
-				sample.Channels = append(sample.Channels, b.adcnorm(chan1raw))
-				b.readchan <- sample
+				for i := 0; i < b.numchan; i++ {
+					sample.Channels[i] = b.adcnorm(b.offsetBinaryToInt(chans[i]))
+					chans[i] = []byte{'\x00', '\x00', '\x00', '\x00', '\x00', '\x00'}
+				}
+				b.rawBroadcaster.Submit(sample)
 				seqnum++
-				chan0 = []byte{'\x00', '\x00', '\x00', '\x00', '\x00', '\x00'}
-				chan1 = []byte{'\x00', '\x00', '\x00', '\x00', '\x00', '\x00'}
 				ctr = 0
 				firsthalf = true
 			} else if val == '\t' {
 				firsthalf = false
 				ctr = 0
 			} else if firsthalf && b.isdatabyte(val) {
-				chan0[ctr] = val
+				chans[0][ctr] = val // assumes 2 channels only
 				ctr++
 			} else if b.isdatabyte(val) {
-				chan1[ctr%6] = val
+				chans[1][ctr%6] = val // assumes 2 channels only
 				ctr++
 			}
 		}
@@ -115,7 +152,6 @@ func (b *Brainduino) isdatabyte(bb byte) bool {
 		bb == '\x37' ||
 		bb == '\x38' ||
 		bb == '\x39' ||
-		bb == '\x40' ||
 		bb == '\x41' ||
 		bb == '\x42' ||
 		bb == '\x43' ||
@@ -124,69 +160,61 @@ func (b *Brainduino) isdatabyte(bb byte) bool {
 		bb == '\x46')
 }
 
-func (b *Brainduino) broadcast() {
-	for {
-		sample := <-b.readchan
-		for _, listener := range b.listeners {
-			listener <- sample
-		}
-	}
+func (b Brainduino) RegisterRawListener(listener chan<- interface{}) {
+	b.rawBroadcaster.Register(listener)
 }
 
-func (b Brainduino) RegisterListener(name string, listener chan Sample) {
-	b.listeners[name] = listener
+func (b Brainduino) RegisterFFTListener(listener chan<- interface{}) {
+	b.fftBroadcaster.Register(listener)
 }
 
-func NewBrainduino(path string) (Device, error) {
-	device, err := serial.Open(serial.OpenOptions{
-		PortName:              path,
-		BaudRate:              230400,
-		InterCharacterTimeout: 100, // In milliseconds
-		MinimumReadSize:       14,  // In bytes
-		DataBits:              8,
-		StopBits:              1,
-	})
-	if err != nil {
-		return nil, err
-	}
-	c := make(chan Sample)
+func NewBrainduino(device io.ReadWriteCloser) Device {
 	brainduino := Brainduino{
 		ReadWriteCloser: device,
 		offsethighbit:   1 << 23,
 		wordsize:        6,
 		numchan:         2,
-		readchan:        c,
-		listeners:       make(map[string]chan Sample),
+		rawBroadcaster:  pubsub.NewBroadcaster(0),
+		fftBroadcaster:  pubsub.NewBroadcaster(0),
 	}
 	go brainduino.readloop()
-	go brainduino.broadcast()
-	return brainduino, nil
-}
-
-func newMockBrainduino(datastream chan byte) (*Brainduino, error) {
-	c := make(chan Sample)
-	brainduino := &Brainduino{
-		ReadWriteCloser: mockDevice{
-			datastream: datastream,
-		},
-		offsethighbit: 1 << 23,
-		wordsize:      6,
-		numchan:       2,
-		readchan:      c,
-		listeners:     make(map[string]chan Sample),
-	}
-	go brainduino.readloop()
-	go brainduino.broadcast()
-	return brainduino, nil
+	go brainduino.fftloop()
+	return brainduino
 }
 
 type mockDevice struct {
 	datastream chan byte
 }
 
+func randomDatastream(c chan byte) {
+	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
+	buf := make([]byte, 64)
+	ctr := 0
+	for {
+		n, err := rnd.Read(buf)
+		if err != nil {
+			fmt.Printf("Error reading %d bytes from buf %v: %s\n", n, buf, err)
+		}
+		hexstr := []byte(fmt.Sprintf("%X", buf))
+		for _, v := range hexstr {
+			if ctr == 6 {
+				c <- '\t'
+				ctr++
+			} else if ctr == 13 {
+				c <- '\r'
+				ctr = 0
+				time.Sleep(time.Millisecond * 4)
+			}
+			c <- v
+			ctr++
+		}
+	}
+}
+
 func (md mockDevice) Read(buf []byte) (int, error) {
 	n := 0
-	for buf[n] = range md.datastream {
+	for idx, _ := range buf {
+		buf[idx] = <-md.datastream
 		n++
 	}
 	return n, nil

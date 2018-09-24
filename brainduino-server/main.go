@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"math/cmplx"
 
-	"github.com/mjibson/go-dsp/fft"
-
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/websocket"
 )
@@ -21,7 +19,8 @@ func rootHandler(ctx iris.Context) {
 }
 
 type WebsocketTunnel struct {
-	listeners   []chan Sample
+	rawlistener <-chan interface{}
+	fftlistener <-chan interface{}
 	connections []websocket.Connection
 }
 
@@ -45,26 +44,29 @@ func abs(cin []complex128) []float64 {
 }
 
 func (wst *WebsocketTunnel) broadcast() {
-	// We may not always want to broadcast Samples???
-	fftdata := make([]float64, 250)
-	ctr := 0
 	for {
-		for _, listener := range wst.listeners {
-			select {
-			case sample := <-listener:
-				fftdata[ctr%250] = sample.Channels[0]
-				sample.FFT = abs(fft.FFTReal(fftdata))[:124]
-				for _, c := range wst.connections {
-					samplejson, err := json.Marshal(sample)
-					if err != nil {
-						fmt.Printf("error marshalling sample json: %s\n", err)
-						continue
-					}
-					c.To(websocket.Broadcast).EmitMessage(samplejson)
+		select {
+		case s := <-wst.rawlistener:
+			d := s.(Sample)
+			for _, c := range wst.connections {
+				jsondata, err := json.Marshal(d)
+				if err != nil {
+					fmt.Printf("error marshalling sample json: %s\n", err)
+					continue
 				}
+				c.EmitMessage(jsondata)
+			}
+		case f := <-wst.fftlistener:
+			d := f.(FFTData)
+			for _, c := range wst.connections {
+				jsondata, err := json.Marshal(d)
+				if err != nil {
+					fmt.Printf("error marshalling sample json: %s\n", err)
+					continue
+				}
+				c.EmitMessage(jsondata)
 			}
 		}
-
 	}
 }
 
@@ -77,15 +79,31 @@ func init() {
 
 func main() {
 	// init brainduino
-	b, err := NewBrainduino(brainduinopath)
-	if err != nil {
-		fmt.Printf("Failed to open brainduino: %s\n", err)
-		return
+	/*
+			device, err := serial.Open(serial.OpenOptions{
+		                PortName:              "/dev/rfcomm0",
+		                BaudRate:              230400,
+		                InterCharacterTimeout: 100, // In milliseconds
+		                MinimumReadSize:       14,  // In bytes
+		                DataBits:              8,
+		                StopBits:              1,
+		        })
+			if err != nil {
+				fmt.Printf("Failed to open device: %s\n", err)
+				return
+			}
+	*/
+	device := mockDevice{
+		datastream: make(chan byte),
 	}
+	b := NewBrainduino(device)
+	go randomDatastream(device.datastream)
 	defer b.Close()
 
-	timeserieslistener := make(chan Sample)
-	b.RegisterListener("timeseries_ws_listener", timeserieslistener)
+	rawlistener := make(chan interface{})
+	b.RegisterRawListener(rawlistener)
+	fftlistener := make(chan interface{})
+	b.RegisterFFTListener(fftlistener)
 
 	app := iris.New()
 
@@ -94,7 +112,8 @@ func main() {
 
 	// set up websocket routes
 	wst := &WebsocketTunnel{
-		listeners:   []chan Sample{timeserieslistener},
+		rawlistener: rawlistener,
+		fftlistener: fftlistener,
 		connections: make([]websocket.Connection, 0),
 	}
 	ws := websocket.New(websocket.Config{

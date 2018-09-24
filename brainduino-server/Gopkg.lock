@@ -40,6 +40,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:09caacaac48b388502b23d8afbc58003d0e3ec8d4faf78a866d4cde554d946f7"
+  name = "github.com/dustin/go-broadcast"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "f664265f5a662fb4d1df7f3533b1e8d0e0277120"
+
+[[projects]]
+  branch = "master"
   digest = "1:f524f46fd5c8f8ae8bef1f754683f2fbb951fb616010be6ff6eed9a6e4082fd7"
   name = "github.com/eknkc/amber"
   packages = [
@@ -96,14 +104,6 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "36e9d2ebbde5e3f13ab2e25625fd453271d6522e"
-
-[[projects]]
-  branch = "master"
-  digest = "1:62737c77426b1784408f1908fb6aab50bdb1732396489a79b03c655643b0f4b2"
-  name = "github.com/jacobsa/go-serial"
-  packages = ["serial"]
-  pruneopts = "UT"
-  revision = "15cf729a72d49e837fa047a4142fa6e4d5ab45a1"
 
 [[projects]]
   branch = "master"
@@ -365,7 +365,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/jacobsa/go-serial/serial",
+    "github.com/dustin/go-broadcast",
     "github.com/kataras/iris",
     "github.com/kataras/iris/websocket",
     "github.com/mjibson/go-dsp/fft",

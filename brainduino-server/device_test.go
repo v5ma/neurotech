@@ -18,7 +18,11 @@ func TestOffsetBinaryToInt(t *testing.T) {
 	}
 
 	datastream := make(chan byte)
-	b, _ := newMockBrainduino(datastream)
+	device := mockDevice{
+		datastream: datastream,
+	}
+	bi := NewBrainduino(device)
+	b := bi.(Brainduino)
 
 	for _, table := range tables {
 		actual := b.offsetBinaryToInt(table.hexstr)
@@ -41,7 +45,11 @@ func TestADCNorm(t *testing.T) {
 	}
 
 	datastream := make(chan byte)
-	b, _ := newMockBrainduino(datastream)
+	device := mockDevice{
+		datastream: datastream,
+	}
+	bi := NewBrainduino(device)
+	b := bi.(Brainduino)
 
 	for _, table := range tables {
 		actual := b.adcnorm(table.raw)
@@ -56,29 +64,41 @@ func TestReadloop(t *testing.T) {
 		testdata []byte
 		expected []Sample
 	}{
-		{[]byte("000000\t000000\r000000\t000000\r000000\t000000\r"), []Sample{Sample{[]float64{-5.0, -5.0}, time.Now(), 0}, Sample{[]float64{-5.0, -5.0}, time.Now(), 0}, Sample{[]float64{-5.0, -5.0}, time.Now(), 0}}},
+		{[]byte("000000\t000000\r000000\t000000\r000000\t000000\r"), []Sample{Sample{"sample", []float64{-5.0, -5.0}, time.Now(), 0}, Sample{"sample", []float64{-5.0, -5.0}, time.Now(), 1}, Sample{"sample", []float64{-5.0, -5.0}, time.Now(), 2}}},
+		{[]byte("800000\t800000\r800000\t800000\r800000\t800000\r"), []Sample{Sample{"sample", []float64{0.0, 0.0}, time.Now(), 0}, Sample{"sample", []float64{0.0, 0.0}, time.Now(), 1}, Sample{"sample", []float64{0.0, 0.0}, time.Now(), 2}}},
+		{[]byte("800000\t000000\r000000\t800000\r800000\t800000\r"), []Sample{Sample{"sample", []float64{0.0, -5.0}, time.Now(), 0}, Sample{"sample", []float64{-5.0, 0.0}, time.Now(), 1}, Sample{"sample", []float64{0.0, 0.0}, time.Now(), 2}}},
 	}
 
 	for _, table := range tables {
 		datastream := make(chan byte)
-		mbd, _ := newMockBrainduino(datastream)
-		testlistener := make(chan Sample)
-		mbd.RegisterListener("testlistener", testlistener)
+		device := mockDevice{
+			datastream: datastream,
+		}
+		b := NewBrainduino(device)
+
+		testlistener := make(chan interface{})
+		b.RegisterRawListener(testlistener)
+
 		go func() {
 			for _, d := range table.testdata {
 				datastream <- d
 			}
-			defer mbd.Close()
 		}()
-		for actual := range testlistener {
-			for _, sample := range table.expected {
-				for channum, channel := range sample.Channels {
-					if actual.Channels[channum] != channel {
-						t.Errorf("For: %x, Got: %f, Want: %f\n", table.testdata, actual.Channels[channum], channel)
-					}
+
+		for _, sample := range table.expected {
+			a := <-testlistener
+			actual := a.(Sample)
+			for channum, channel := range sample.Channels {
+				if actual.Channels[channum] != channel {
+					t.Errorf("For: %x, Got: %f, Want: %f\n", table.testdata, actual.Channels[channum], channel)
 				}
 			}
-			close(testlistener)
+			if actual.SequenceNumber != sample.SequenceNumber {
+				t.Errorf("For: %x, Got: %d, Want: %d\n", table.testdata, actual.SequenceNumber, sample.SequenceNumber)
+			}
+			if actual.Name != sample.Name {
+				t.Errorf("For: %x, Got: %s, Want: %s\n", table.testdata, actual.Name, sample.Name)
+			}
 		}
 	}
 }

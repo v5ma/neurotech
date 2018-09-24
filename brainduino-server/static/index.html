@@ -58,31 +58,25 @@
 	cyl3 = document.getElementById("cyl3")
   
         // provides a stream of data after main.py has been run.
-	var ws = new WebSocket("ws://alpine-unicorn.noise:8080/ws")
+	var ws = new WebSocket("ws://localhost:8080/ws")
 	ws.onmessage = function (event) {
 		data = JSON.parse(event.data)
+		if (data.Name != "sample") {
+			return
+		}
 		
 		// created an array here to read out data from the arduino chip.
 		// We split with a space. The first value is the right reader, 
 		// the second is the left reader.
 		var eeg_readings = data.Channels
-		// console.log(eeg_readings)
 
-		var fft_readings = data.FFT
-		// console.log(fft_readings)
-		
 		// changing the string to a decimal by dividing or 
 		// multiplying the strings given by our raw data
 		// there is too much variance. Division, modifies the range of physical 
 		// bounds variance but not the time update variance
-		// var l = (eeg_readings[0] * 8)
-		// var r = (eeg_readings[1] * 8)
-		var l = fft_readings[10]
-		var r = fft_readings[5]
+		var l = (eeg_readings[0] / 100)
+		var r = (eeg_readings[1] / 100)
 
-		// console.log(l)
-		// console.log(r)
-		
 		sphere.object3D.position.x = l
 		sphere2.object3D.position.y = r
 		sphere3.object3D.position.x = l
