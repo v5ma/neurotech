@@ -68,14 +68,15 @@
 		// created an array here to read out data from the arduino chip.
 		// We split with a space. The first value is the right reader, 
 		// the second is the left reader.
-		var eeg_readings = data.Channels
+		var eeg_readings = data.Channels;
+
 
 		// changing the string to a decimal by dividing or 
 		// multiplying the strings given by our raw data
 		// there is too much variance. Division, modifies the range of physical 
 		// bounds variance but not the time update variance
-		var l = (eeg_readings[0] / 100)
-		var r = (eeg_readings[1] / 100)
+		var l = (eeg_readings[0] * 1)
+		var r = (eeg_readings[1] * 1)
 
 		sphere.object3D.position.x = l
 		sphere2.object3D.position.y = r
