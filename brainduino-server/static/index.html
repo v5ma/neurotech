@@ -62,6 +62,7 @@
 	ws.onmessage = function (event) {
 		data = JSON.parse(event.data)
 		if (data.Name != "sample") {
+			// console.log(data.Channels)
 			return
 		}
 		

@@ -34,12 +34,14 @@ func main() {
 		fmt.Printf("Failed to open device: %s\n", err)
 		return
 	}
-	//device := mockDevice{
-	//	datastream: make(chan byte),
-	//}
+	/*
+		device := mockDevice{
+			datastream: make(chan byte),
+		}
+		go randomDatastream(device.datastream)
+	*/
 	b := NewBrainduino(device)
 	defer b.Close()
-	//go randomDatastream(device.datastream)
 
 	rawlistener := make(chan interface{})
 	b.Register(SampleListener, rawlistener)
@@ -52,7 +54,21 @@ func main() {
 	app := iris.New()
 
 	// set up http routes
-	app.Get("/", rootHandler)
+	app.Get("/", func(ctx iris.Context) {
+		ctx.ServeFile(indexfile, false)
+	})
+	app.Post("/command/{id:string}", func(ctx iris.Context) {
+		id := ctx.Params().Get("id")
+		if !isValidCommand(id) {
+			ctx.StatusCode(iris.StatusInternalServerError)
+			ctx.Writef("Internal Server Error: %s command not supported\n", id)
+			return
+		}
+		_, err := b.Write([]byte(id))
+		if err != nil {
+			fmt.Printf("Error writing to brainduino: %s\n", err)
+		}
+	})
 
 	// set up websocket routes
 	wst := &WebsocketTunnel{

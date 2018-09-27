@@ -4,13 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/kataras/iris"
 	"github.com/kataras/iris/websocket"
 )
-
-func rootHandler(ctx iris.Context) {
-	ctx.ServeFile(indexfile, false)
-}
 
 type WebsocketTunnel struct {
 	rawlistener <-chan interface{}

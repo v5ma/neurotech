@@ -11,6 +11,41 @@ import (
 	"github.com/mjibson/go-dsp/fft"
 )
 
+const (
+	Set2ChanModeWithSampleRate500Hz = "X"
+	Set2ChanModeWithSampleRate250Hz = "U"
+	SetSampleRate500Hz              = "V"
+	SetSampleRate250Hz              = "W"
+	SetSampleRate190Hz              = "B"
+	SetLowPass32Hz                  = "S"
+	SetLowPass40Hz                  = "M"
+	SetLowPass50Hz                  = "Z"
+	SetLowPass100Hz                 = "Q"
+	SetLowPass150Hz                 = "O"
+	SetLowPass200Hz                 = "P"
+	SetBypassFilter                 = "I"
+)
+
+var BrainduinoCommands map[string]struct{} = map[string]struct{}{
+	Set2ChanModeWithSampleRate500Hz: struct{}{},
+	Set2ChanModeWithSampleRate250Hz: struct{}{},
+	SetSampleRate500Hz:              struct{}{},
+	SetSampleRate250Hz:              struct{}{},
+	SetSampleRate190Hz:              struct{}{},
+	SetLowPass32Hz:                  struct{}{},
+	SetLowPass40Hz:                  struct{}{},
+	SetLowPass50Hz:                  struct{}{},
+	SetLowPass100Hz:                 struct{}{},
+	SetLowPass150Hz:                 struct{}{},
+	SetLowPass200Hz:                 struct{}{},
+	SetBypassFilter:                 struct{}{},
+}
+
+func isValidCommand(s string) bool {
+	_, ok := BrainduinoCommands[s]
+	return ok
+}
+
 type ListenerType int
 
 const (
@@ -75,6 +110,7 @@ func (b *Brainduino) offsetBinaryToInt(hexstr []byte) int {
 }
 
 func (b *Brainduino) fftloop() {
+	// assumes b.numchan == 2
 	ctr := 0
 	var seqnum uint
 	fftdata0 := make([]float64, 250)
@@ -89,12 +125,12 @@ func (b *Brainduino) fftloop() {
 		if ctr%250 == 0 {
 			fftd := FFTData{
 				Name:           "fft",
-				Channels:       make([][]float64, 2),
+				Channels:       make([][]float64, b.numchan),
 				SequenceNumber: seqnum,
 				Timestamp:      time.Now(),
 			}
-			fftd.Channels[0] = abs(fft.FFTReal(fftdata0))[:124]
-			fftd.Channels[1] = abs(fft.FFTReal(fftdata1))[:124]
+			fftd.Channels[0] = abs(fft.FFTReal(fftdata0))[:125]
+			fftd.Channels[1] = abs(fft.FFTReal(fftdata1))[:125]
 			b.fftBroadcaster.Submit(fftd)
 			seqnum++
 		}
@@ -104,6 +140,7 @@ func (b *Brainduino) fftloop() {
 }
 
 func (b *Brainduino) readloop() {
+	// assumes b.numchan == 2
 	buf := make([]byte, 14)
 	chans := make([][]byte, b.numchan)
 	for i := 0; i < b.numchan; i++ {
@@ -111,18 +148,29 @@ func (b *Brainduino) readloop() {
 	}
 
 	firsthalf := true
+	incmdseq := false
 	ctr := 0
 
 	ts := time.Now()
 	var seqnum uint
 	for {
 		n, err := b.Read(buf)
-		ts = time.Now()
 		if err != nil {
 			fmt.Printf("Failed to read brainduino: %s\n", err)
 			continue
 		}
+		ts = time.Now()
 		for _, val := range buf[:n] {
+			if !b.isdatabyte(val) {
+				incmdseq = true
+				continue
+			}
+
+			if incmdseq && val == '\x0D' {
+				incmdseq = false
+				continue
+			}
+
 			if val == '\r' {
 				sample := Sample{
 					Name:           "sample",
@@ -142,10 +190,10 @@ func (b *Brainduino) readloop() {
 				firsthalf = false
 				ctr = 0
 			} else if firsthalf && b.isdatabyte(val) {
-				chans[0][ctr] = val // assumes 2 channels only
+				chans[0][ctr] = val
 				ctr++
 			} else if b.isdatabyte(val) {
-				chans[1][ctr%6] = val // assumes 2 channels only
+				chans[1][ctr%6] = val
 				ctr++
 			}
 		}
@@ -153,7 +201,9 @@ func (b *Brainduino) readloop() {
 }
 
 func (b *Brainduino) isdatabyte(bb byte) bool {
-	return (bb == '\x30' ||
+	return (bb == '\x09' ||
+		bb == '\x0D' ||
+		bb == '\x30' ||
 		bb == '\x31' ||
 		bb == '\x32' ||
 		bb == '\x33' ||
