@@ -190,7 +190,7 @@ func (b *Brainduino) readloop() {
 				firsthalf = false
 				ctr = 0
 			} else if firsthalf && b.isdatabyte(val) {
-				chans[0][ctr] = val
+				chans[0][ctr%6] = val
 				ctr++
 			} else if b.isdatabyte(val) {
 				chans[1][ctr%6] = val
