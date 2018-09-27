@@ -77,7 +77,7 @@ func TestReadloop(t *testing.T) {
 		b := NewBrainduino(device)
 
 		testlistener := make(chan interface{})
-		b.RegisterRawListener(testlistener)
+		b.Register(SampleListener, testlistener)
 
 		go func() {
 			for _, d := range table.testdata {
@@ -100,5 +100,6 @@ func TestReadloop(t *testing.T) {
 				t.Errorf("For: %x, Got: %s, Want: %s\n", table.testdata, actual.Name, sample.Name)
 			}
 		}
+		b.Unregister(SampleListener, testlistener)
 	}
 }

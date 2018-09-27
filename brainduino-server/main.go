@@ -38,13 +38,16 @@ func main() {
 	//	datastream: make(chan byte),
 	//}
 	b := NewBrainduino(device)
-	//go randomDatastream(device.datastream)
 	defer b.Close()
+	//go randomDatastream(device.datastream)
 
 	rawlistener := make(chan interface{})
-	b.RegisterRawListener(rawlistener)
+	b.Register(SampleListener, rawlistener)
+	defer b.Unregister(SampleListener, rawlistener)
+
 	fftlistener := make(chan interface{})
-	b.RegisterFFTListener(fftlistener)
+	b.Register(FFTListener, fftlistener)
+	defer b.Unregister(FFTListener, fftlistener)
 
 	app := iris.New()
 

@@ -11,10 +11,21 @@ import (
 	"github.com/mjibson/go-dsp/fft"
 )
 
+type ListenerType int
+
+const (
+	SampleListener ListenerType = iota
+	FFTListener
+)
+
+type Subscriber interface {
+	Register(ListenerType, chan<- interface{})
+	Unregister(ListenerType, chan<- interface{})
+}
+
 type Device interface {
 	io.ReadWriteCloser
-	RegisterRawListener(chan<- interface{})
-	RegisterFFTListener(chan<- interface{})
+	Subscriber
 }
 
 type Sample struct {
@@ -160,12 +171,22 @@ func (b *Brainduino) isdatabyte(bb byte) bool {
 		bb == '\x46')
 }
 
-func (b Brainduino) RegisterRawListener(listener chan<- interface{}) {
-	b.rawBroadcaster.Register(listener)
+func (b Brainduino) Register(t ListenerType, listener chan<- interface{}) {
+	switch t {
+	case SampleListener:
+		b.rawBroadcaster.Register(listener)
+	case FFTListener:
+		b.fftBroadcaster.Register(listener)
+	}
 }
 
-func (b Brainduino) RegisterFFTListener(listener chan<- interface{}) {
-	b.fftBroadcaster.Register(listener)
+func (b Brainduino) Unregister(t ListenerType, listener chan<- interface{}) {
+	switch t {
+	case SampleListener:
+		b.rawBroadcaster.Unregister(listener)
+	case FFTListener:
+		b.fftBroadcaster.Unregister(listener)
+	}
 }
 
 func NewBrainduino(device io.ReadWriteCloser) Device {
