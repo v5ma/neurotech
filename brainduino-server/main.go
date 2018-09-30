@@ -65,6 +65,9 @@ func main() {
 
 	// set up http routes
 	app.StaticWeb("/static", "./static")
+	app.Get("/", func(ctx iris.Context) {
+		ctx.ServeFile(indexfile, false)
+	})
 	app.Get("/chartsngraphs", func(ctx iris.Context) {
 		ctx.ServeFile(chartsngraphsfile, false)
 	})
