@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="./static/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./static/main.css">
+    <script src="https://d3js.org/d3.v5.min.js" charset="utf-8"></script>
+  </head>
+
+  <body>
+    <div class="nav">
+      <div class="container-fluid">
+        <ul class="pull-left">
+          <li><a href="https://github.com/Micah1/neurotech">NeurotechXSF</a></li>
+        </ul>
+        <ul class="pull-right">
+          <li><a href="#">Sign Up</a></li>
+          <li><a href="#">Log In</a></li>
+          <li><a href="#">Help</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="jumbotron">
+    <div class="graph-guides">
+      <div class="container-fluid">
+        <h2>Visualize your brain waves.</h2>
+        <div class="row">
+          <div class="col-md-4" id="chantoggle">
+            <div class="thumbnail">
+              <input type="hidden" value="1" href="http://localhost:8080/">
+                <svg id="timeserieschan1"></svg>
+              </input>
+            </div>
+            <div class="thumbnail">
+              <input type="hidden" value="2" href="http://localhost:8080/">
+                <svg id="timeserieschan2"></svg>
+              </input>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <div class="learn-more">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-md-4">
+            <h3>Participate</h3>
+            <p>Join EEG studies.</p>
+            <p><a href="#">Learn more about current research</a></p>
+          </div>
+          <div class="col-md-4">
+            <h3>Record</h3>
+            <p>Generate brain reports.</p>
+            <p><a href="#">Learn more about recording</a></p>
+          </div>
+          <div class="col-md-4">
+            <h3>Privacy and Safety</h3>
+            <p>We don't collect and save your data without your permission.'</p>
+            <p><a href="#">Learn about privacy at with Open-BCI go server</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </body>
+    <script type="text/javascript">
+	    var makechart = function(chartid) {
+		    var n = 250;
+		    var data = d3.range(n).map(function() {return 0});
+
+		    var margin = {top: 20, right: 5, bottom: 20, left: 40},
+			width = 620 - margin.left - margin.right,
+			height = 190 - margin.top - margin.bottom;
+
+		    var x = d3.scaleLinear()
+			.domain([0, n - 1])
+			.range([0, width]);
+
+		    var xAxis = d3.axisBottom(x);
+
+		    var y = d3.scaleLinear()
+			.domain([-10, 10])
+			.range([height, 0])
+			.clamp(true);
+
+		    var yAxis = d3.axisLeft(y);
+
+		    var line = d3.line()
+		      .x(function(d, i) { return x(i); })
+		      .y(function(d, i) { return y(d); });
+
+		    var chart = d3.select("#" + chartid)
+			.attr("width", width + margin.left + margin.right)
+			.attr("height", height + margin.top + margin.bottom)
+			.style("color", "black")
+			.style("background-color", "white")
+		        .append("g")
+			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+		    chart.append("g")
+			.attr("class", "x axis")
+			.attr("transform", "translate(0," + height/2 + ")")
+			.call(xAxis);
+
+		    chart.append("g")
+			.attr("class", "y axis")
+			.call(yAxis);
+
+		    chart.append("defs").append("clipPath")
+		      .attr("id", "clip")
+		      .append("rect")
+		      .attr("width", width)
+		      .attr("height", height);
+
+		    var path = chart.append("g")
+		      .attr("clip-path", "url(#clip)")
+		      .append("path")
+		      .datum(data)
+		      .attr("class", "line")
+		      .attr("d", line);
+
+		    return function(d) {
+		      for (i = 0; i < d.length; i++) {
+			  data.unshift(d[i]);
+			  data.pop();
+		      }
+		      // redraw the line, and slide it to the left
+		      path
+		      .attr("d", line)
+		      .attr("transform", null)
+		      .transition()
+		    }
+	};
+	var updaterawchan1 = makechart("timeserieschan1");
+	var updaterawchan2 = makechart("timeserieschan2");
+	if (window["WebSocket"]) {
+		conn = new WebSocket("ws://localhost:8080/ws");
+
+		conn.onmessage = function(evt) {
+			rdata = JSON.parse(evt.data);
+			if (rdata.Name == "sample") {
+				updaterawchan1([rdata.Channels[0]]);
+				updaterawchan2([rdata.Channels[1]]);
+			} 
+		}
+	}
+    </script>
+</html>

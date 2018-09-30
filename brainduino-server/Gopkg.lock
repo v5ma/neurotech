@@ -107,6 +107,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:62737c77426b1784408f1908fb6aab50bdb1732396489a79b03c655643b0f4b2"
+  name = "github.com/jacobsa/go-serial"
+  packages = ["serial"]
+  pruneopts = "UT"
+  revision = "15cf729a72d49e837fa047a4142fa6e4d5ab45a1"
+
+[[projects]]
+  branch = "master"
   digest = "1:3e551bbb3a7c0ab2a2bf4660e7fcad16db089fdcfbb44b0199e62838038623ea"
   name = "github.com/json-iterator/go"
   packages = ["."]
@@ -366,6 +374,7 @@
   analyzer-version = 1
   input-imports = [
     "github.com/dustin/go-broadcast",
+    "github.com/jacobsa/go-serial/serial",
     "github.com/kataras/iris",
     "github.com/kataras/iris/websocket",
     "github.com/mjibson/go-dsp/fft",
