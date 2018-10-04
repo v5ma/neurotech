@@ -25,7 +25,7 @@
       <div class="container-fluid">
         <h2>Visualize your brain waves.</h2>
         <div class="row">
-          <div class="col-md-4" id="chantoggle">
+          <div class="col-md-8" id="chantoggle">
             <div class="thumbnail">
               <input type="hidden" value="1" href="http://localhost:8080/">
                 <svg id="timeserieschan1"></svg>
@@ -35,6 +35,16 @@
               <input type="hidden" value="2" href="http://localhost:8080/">
                 <svg id="timeserieschan2"></svg>
               </input>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-8" id="chantoggle">
+            <div class="thumbnail">
+	      <canvas id="fftchan1" width="200" height="100"></canvas>
+            </div>
+            <div class="thumbnail">
+	      <canvas id="fftchan2" width="200" height="100"></canvas>
             </div>
           </div>
         </div>
@@ -71,7 +81,7 @@
 		    var data = d3.range(n).map(function() {return 0});
 
 		    var margin = {top: 20, right: 5, bottom: 20, left: 40},
-			width = 620 - margin.left - margin.right,
+			width = 840 - margin.left - margin.right,
 			height = 190 - margin.top - margin.bottom;
 
 		    var x = d3.scaleLinear()
@@ -81,7 +91,7 @@
 		    var xAxis = d3.axisBottom(x);
 
 		    var y = d3.scaleLinear()
-			.domain([-10, 10])
+			.domain([-1, 1])
 			.range([height, 0])
 			.clamp(true);
 
@@ -100,12 +110,12 @@
 			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 		    chart.append("g")
-			.attr("class", "x axis")
+			.attr("class", "xaxis")
 			.attr("transform", "translate(0," + height/2 + ")")
 			.call(xAxis);
 
 		    chart.append("g")
-			.attr("class", "y axis")
+			.attr("class", "yaxis")
 			.call(yAxis);
 
 		    chart.append("defs").append("clipPath")
@@ -121,7 +131,7 @@
 		      .attr("class", "line")
 		      .attr("d", line);
 
-		    return function(d) {
+		    return function(d, rd) {
 		      for (i = 0; i < d.length; i++) {
 			  data.unshift(d[i]);
 			  data.pop();
@@ -130,19 +140,32 @@
 		      path
 		      .attr("d", line)
 		      .attr("transform", null)
-		      .transition()
+		      .transition();
+		      // redraw the scale on the y-axis
+		      minimum = Math.min(...rd);
+		      maximum = Math.max(...rd);
+		      maxmax = Math.max(Math.abs(minimum), Math.abs(maximum));
+		      y.domain([-maxmax, maxmax]);
+		      chart.select(".yaxis").call(yAxis);
 		    }
 	};
 	var updaterawchan1 = makechart("timeserieschan1");
 	var updaterawchan2 = makechart("timeserieschan2");
+	var recentdata = [];
+	var recentdatalen = 1000;
+	var ctr = 0;
 	if (window["WebSocket"]) {
 		conn = new WebSocket("ws://localhost:8080/ws");
 
 		conn.onmessage = function(evt) {
 			rdata = JSON.parse(evt.data);
 			if (rdata.Name == "sample") {
-				updaterawchan1([rdata.Channels[0]]);
-				updaterawchan2([rdata.Channels[1]]);
+				recentdata[ctr%recentdatalen] = rdata.Channels[0];
+				ctr++;
+				recentdata[ctr%recentdatalen] = rdata.Channels[1];
+				ctr++;
+				updaterawchan1([rdata.Channels[0]], recentdata);
+				updaterawchan2([rdata.Channels[1]], recentdata);
 			} 
 		}
 	}
