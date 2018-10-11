@@ -3,6 +3,7 @@ Operating instructions
 
 ```
 cd ~/go/src/github.com/Micah1/neurotech/brainduino-server
+git pull origin master
 go build
 sudo ./brainduino-server
 ```
