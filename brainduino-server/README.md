@@ -8,6 +8,42 @@ dep ensure
 go build
 sudo ./brainduino-server
 ```
+Event Schema
+============
+```
+type Sample struct {
+        Name           string
+        Channels       []float64
+        Timestamp      time.Time
+        SequenceNumber uint
+}
+Example websocket event JSON:
+{
+  "data": {
+    "Name": "sample",
+    "Channels": [0.01, 0.32],
+    "Timestamp": "2018-10-10T21:05:05.031850444-07:00",
+    "SequenceNumber": 1
+  }
+}
+
+type FFTData struct {
+        Name           string
+        Channels       [][]float64
+        Timestamp      time.Time
+        SequenceNumber uint
+}
+Example websocket event JSON:
+{
+  "data": {
+    "Name": "fft",
+    "Channels": [[0.01, 0.32, ..., 0.123], [0.09234, 0.1234123, ..., 0.123543]],
+    "Timestamp": "2018-10-10T21:05:05.031850444-07:00",
+    "SequenceNumber": 1
+  }
+}
+```
+
 
 For details see `./brainduino-server --help`
 
