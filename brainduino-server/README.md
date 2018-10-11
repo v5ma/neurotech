@@ -6,7 +6,7 @@ cd ~/go/src/github.com/Micah1/neurotech/brainduino-server
 git pull origin master
 dep ensure
 go build
-sudo ./brainduino-server
+sudo ./brainduino-server --url 0.0.0.0:80
 ```
 Event Schema
 ============
