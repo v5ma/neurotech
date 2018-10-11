@@ -4,6 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"os"
+	"strconv"
+	"strings"
 
 	"github.com/jacobsa/go-serial/serial"
 	"github.com/kataras/iris"
@@ -19,10 +22,25 @@ var mock bool
 func init() {
 	flag.StringVar(&url, "url", "0.0.0.0:8080", "url to serve on")
 	flag.StringVar(&indexfile, "indexfile", "./static/index.html", "path to index.html")
-	flag.StringVar(&brainduinopath, "brainduinopath", "/dev/rfcomm0", "path to brainduino serial device")
+	flag.StringVar(&brainduinopath, "brainduinopath", "", "path to brainduino serial device")
 	flag.StringVar(&chartsngraphsfile, "chartsngraphsfile", "./static/chartsngraphs.html", "path to chartsngraphs.html")
 	flag.BoolVar(&mock, "mock", false, "to mock, or not to mock")
 	flag.Parse()
+}
+
+func getSystemBrainduinoDevicePath() string {
+	if len(brainduinopath) > 0 {
+		return brainduinopath
+	} else {
+		basestr := "/dev/rfcomm"
+		for i := 0; i < 10; i++ {
+			basestr = strings.Join([]string{basestr, strconv.Itoa(i)}, "")
+			if _, err := os.Stat(basestr); !os.IsNotExist(err) {
+				return basestr
+			}
+		}
+	}
+	return "not found"
 }
 
 func main() {
@@ -31,7 +49,7 @@ func main() {
 	var err error
 	if !mock {
 		device, err = serial.Open(serial.OpenOptions{
-			PortName:              "/dev/rfcomm0",
+			PortName:              getSystemBrainduinoDevicePath(),
 			BaudRate:              230400,
 			InterCharacterTimeout: 100, // In milliseconds
 			MinimumReadSize:       14,  // In bytes

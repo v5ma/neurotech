@@ -25,23 +25,21 @@
       <div class="container-fluid">
         <h2>Visualize your brain waves.</h2>
         <div class="row">
-          <div class="col-md-8" id="chantoggle">
+          <div class="col-sm-4" id="chan1">
             <div class="thumbnail">
               <input type="hidden" value="1" href="http://localhost:8080/">
                 <svg id="timeserieschan1"></svg>
               </input>
             </div>
             <div class="thumbnail">
+	      <canvas id="fftchan1" width="200" height="100"></canvas>
+            </div>
+          </div>
+          <div class="col-sm-4" id="chan2">
+            <div class="thumbnail">
               <input type="hidden" value="2" href="http://localhost:8080/">
                 <svg id="timeserieschan2"></svg>
               </input>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-md-8" id="chantoggle">
-            <div class="thumbnail">
-	      <canvas id="fftchan1" width="200" height="100"></canvas>
             </div>
             <div class="thumbnail">
 	      <canvas id="fftchan2" width="200" height="100"></canvas>
@@ -81,7 +79,7 @@
 		    var data = d3.range(n).map(function() {return 0});
 
 		    var margin = {top: 20, right: 5, bottom: 20, left: 40},
-			width = 840 - margin.left - margin.right,
+			width = 440 - margin.left - margin.right,
 			height = 190 - margin.top - margin.bottom;
 
 		    var x = d3.scaleLinear()
@@ -132,11 +130,11 @@
 		      .attr("d", line);
 
 		    return function(d, rd) {
+		      // redraw the line, and slide it to the left
 		      for (i = 0; i < d.length; i++) {
 			  data.unshift(d[i]);
 			  data.pop();
 		      }
-		      // redraw the line, and slide it to the left
 		      path
 		      .attr("d", line)
 		      .attr("transform", null)
@@ -151,21 +149,28 @@
 	};
 	var updaterawchan1 = makechart("timeserieschan1");
 	var updaterawchan2 = makechart("timeserieschan2");
-	var recentdata = [];
-	var recentdatalen = 1000;
+	var rawchan1buf = [];
+	var rawchan2buf = [];
+	var rawchanbuflen = 250;
+	var updatefreq = 10;
 	var ctr = 0;
 	if (window["WebSocket"]) {
-		conn = new WebSocket("ws://localhost:8080/ws");
+		conn = new WebSocket("ws://alpine-unicorn.noise/ws");
 
 		conn.onmessage = function(evt) {
 			rdata = JSON.parse(evt.data);
 			if (rdata.Name == "sample") {
-				recentdata[ctr%recentdatalen] = rdata.Channels[0];
+				n1 = rawchan1buf.unshift(rdata.Channels[0]);
+				n2 = rawchan2buf.unshift(rdata.Channels[1]);
+				if (n1 > rawchanbuflen) {
+					rawchan1buf.pop();
+					rawchan2buf.pop();
+				}
 				ctr++;
-				recentdata[ctr%recentdatalen] = rdata.Channels[1];
-				ctr++;
-				updaterawchan1([rdata.Channels[0]], recentdata);
-				updaterawchan2([rdata.Channels[1]], recentdata);
+				if (ctr % updatefreq == 0) {
+					updaterawchan1(rawchan1buf, rawchan1buf.concat(rawchan2buf));
+					updaterawchan2(rawchan2buf, rawchan1buf.concat(rawchan2buf));
+				}
 			} 
 		}
 	}
