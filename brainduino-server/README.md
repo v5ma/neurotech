@@ -4,6 +4,7 @@ Operating instructions
 ```
 cd ~/go/src/github.com/Micah1/neurotech/brainduino-server
 git pull origin master
+dep ensure
 go build
 sudo ./brainduino-server
 ```
