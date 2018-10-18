@@ -1,109 +1,118 @@
-
 <!DOCTYPE html>
 <html>
   <head>
     <meta charset="utf-8">
     <title>Hello, WebVR! • A-Frame</title>
     <meta name="description" content="Hello, WebVR! • A-Frame">
-<style>
-.link{
-}
-</style>
 
     <script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>
-	
-<a-scene>
-  <a-assets>
-    <img id="skyTexture"
-      src="https://raw.githubusercontent.com/naver/egjs-view360/master/demo/assets/img/test_equi_4096.jpg">
-  </a-assets>
+    <script src="https://cdn.rawgit.com/archilogic-com/aframe-gblock/6498b71d/dist/gblock.js"></script>	
+    <a-scene>
+      <a-assets>
+        <img id="skyTexture"
+         src="./static/images/undersea.png">
+      </a-assets>
 
-  
-
-  <a-sky src="#skyTexture"></a-sky>
-
-
-
-
-
-      <a-box id="box" position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9" shadow class="link"></a-box>
-      <a-box id="box2" position="-2 -0.5 -3" rotation="0 45 0" color="#4CffD9" shadow class="link"></a-box>
-      <a-box id="box3" position="-2 -0.5 -3" rotation="0 45 0" color="#CC9fD9" shadow class="link"></a-box>
-      <a-sphere id="sphere" position="2 -1.25 5" radius="1.25" color="#EF2D5E" shadow class="link"></a-sphere>
-      <a-sphere id="sphere2" position="-2 -3 -4" radius="1" color="#EF2Dff" shadow class="link"></a-sphere>
-      <a-sphere id="sphere3" position="5 3 -5" radius="1.25" color="#EF2D5E" shadow class="link"></a-sphere>
-      <a-cylinder id="cyl" position="-1 0.75 5" radius="0.5" height="1.5" color="#FFC65D" shadow class="link"></a-cylinder>
-      <a-cylinder id="cyl2" position="2 3.1 -4" radius="0.5" height="1.5" color="#00C65D" shadow class="link"></a-cylinder>
-      <a-cylinder id="cyl3" position="1 6.75 -1" radius="0.5" height="1.5" color="#FFff5D" shadow class="link"></a-cylinder>
-      <a-plane position="0 0 -4" rotation="-90 0 0" width="4" height="4" color="#7BC8A4" shadow class="link"></a-plane>
+      <a-sky src="#skyTexture"></a-sky>
+      <a-entity id="whale1" position="5 -5 -10" rotation="0 0 0" scale="0.25 0.25 0.25" gblock="https://poly.google.com/view/15cXqVGk0jA"></a-entity>
+      <a-entity id="angler1" position="-5 -5 -10" rotation="0 0 0" scale="1 1 1" gblock="https://poly.google.com/view/egy6iroNVQv"></a-entity>
+      <a-entity id="goldfish1" position="-5 5 -10" rotation="0 0 0" scale="0.015 0.015 0.005" gblock="https://poly.google.com/view/0bOZGc8ONrx"></a-entity>
+      <a-entity id="koifish1" position="5 5 -10" rotation="0 0 0" scale="1 1 1" gblock="https://poly.google.com/view/4ZDrp2YjJzC"></a-entity>
+      <a-entity id="eel1" position="-10 4 -7" rotation="0 0 0" scale=".005 .005 .005" gblock="https://poly.google.com/view/eRb-GgLCnA7"></a-entity>
+      <a-entity id="octopus1" position="-10 0 0" rotation="0 0 0" scale="1 1 1" gblock="https://poly.google.com/view/2pehCIARR11"></a-entity>
+      <a-entity id="seahorse1" position="-5 0 0" rotation="0 0 0" scale="1 1 1" gblock="https://poly.google.com/view/3H4CqcG6JGP"></a-entity>
 
 
-	<!-<a-entity gltf-model="url(/images/Convertible.gltf)"></a-entity>->
-      
-      
-	
       <!-- Camera + cursor. -->
-<a-entity camera look-controls>
-        <a-cursor id="cursor"
-          animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150"
-          animation__fusing="property: fusing; startEvents: fusing; from: 1 1 1; to: 0.1 0.1 0.1; dur: 1500"
-          event-set__1="_event: mouseenter; color: springgreen"
-          event-set__2="_event: mouseleave; color: black"
-          event-set__3="_event: click; color: red"
-          fuse="true"
-          raycaster="objects: .link"></a-cursor>
+      <a-entity camera look-controls>
+      <a-cursor id="cursor"
+       animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150"
+       animation__fusing="property: fusing; startEvents: fusing; from: 1 1 1; to: 0.1 0.1 0.1; dur: 1500"
+       event-set__1="_event: mouseenter; color: springgreen"
+       event-set__2="_event: mouseleave; color: black"
+       event-set__3="_event: click; color: red"
+       fuse="true"
+       raycaster="objects: .link"></a-cursor>
       </a-entity>
+<a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
 	  
-	  
-	  </a-scene>
+    </a-scene>
     
     <script>
+
+
    	// The id references a single element in the above html
-        box = document.getElementById("box")
-	box2 = document.getElementById("box2")
-	box3 = document.getElementById("box3")
-        sphere = document.getElementById("sphere")
-	sphere2 = document.getElementById("sphere2")
-	sphere3 = document.getElementById("sphere3")
-        cyl = document.getElementById("cyl")
-	cyl2 = document.getElementById("cyl2")
-	cyl3 = document.getElementById("cyl3")
+	whale1 = document.getElementById("whale1")
+	angler1 = document.getElementById("angler1")
+	goldfish1 = document.getElementById("goldfish1")
+	koifish1 = document.getElementById("koifish1")
+	eel1 = document.getElementById("eel1")
+	octopus1 = document.getElementById("octopus1")
+	seahorse1 = document.getElementById("seahorse1")
   
         // provides a stream of data after main.py has been run.
 	var ws = new WebSocket("ws://alpine-unicorn.noise/ws")
+	var breathcycle = 1;
 	ws.onmessage = function (event) {
-		// console.log(event.data);
-		
+		breathcycle = breathcycle * -1;
 		// created an array here to read out data from the arduino chip.
 		// We split with a space. The first value is the right reader, 
 		// the second is the left reader.
-		// var eeg_readings = event.data.split(" ")
 		var data = JSON.parse(event.data);
-		if (data.Name != "sample") {
+		if (data.Name == "fft") {
+			var fft_readings = data.Channels;
+			// Normalize the channels
+			// Ex: [1, 2, 3, 4] => [0.1, 0.2, 0.3, 0.4]
+			// Ex: [10, 20, 30, 40] => [0.1, 0.2, 0.3, 0.4]
+			var lchan_sum = fft_readings[0].reduce(function(x, y) { return x + y }, 0)
+			fft_readings[0] = fft_readings[0].map(function(x) { return x / lchan_sum })
+			var rchan_sum = fft_readings[1].reduce(function(x, y) { return x + y }, 0)
+			fft_readings[1] = fft_readings[1].map(function(x) { return x / rchan_sum })
+			var lchan_powerspectrum = {"gamma":fft_readings[0].slice(32, fft_readings[0].length).reduce(function(x, y) { return  x + y }, 0),
+						   "beta" :fft_readings[0].slice(16, 32).reduce(function(x, y) { return x + y }, 0),
+						   "alpha":fft_readings[0].slice(8, 16).reduce(function(x, y) { return x + y }, 0),
+						   "theta":fft_readings[0].slice(4, 8).reduce(function(x, y) { return x + y }, 0),
+						   "delta":fft_readings[0].slice(0, 4).reduce(function(x, y) { return x + y }, 0)}
+			var rchan_powerspectrum = {"gamma":fft_readings[1].slice(32, fft_readings[1].length).reduce(function(x, y) { return x + y }, 0),
+						   "beta" :fft_readings[1].slice(16, 32).reduce(function(x, y) { return x + y }, 0),
+						   "alpha":fft_readings[1].slice(8, 16).reduce(function(x, y) { return x + y }, 0),
+						   "theta":fft_readings[1].slice(4, 8).reduce(function(x, y) { return x + y }, 0),
+						   "delta":fft_readings[1].slice(0, 4).reduce(function(x, y) { return x + y }, 0)}
+			// console.log(lchan_powerspectrum);
+			// console.log(rchan_powerspectrum);
+		} else if (data.Name == "sample") {
+			var eeg_readings = data.Channels;
 			return
 		}
-		var eeg_readings = data.Channels;
-		
+
 		// changing the string to a decimal by dividing or 
 		// multiplying the strings given by our raw data
 		// there is too much variance. Division, modifies the range of physical 
 		// bounds variance but not the time update variance
-		var l = (eeg_readings[0] * 8)
-		var r = (eeg_readings[1] * 8)
+		// var l = (eeg_readings[0] * 1)
+		// var r = (eeg_readings[1] * 1)
 
-		// console.log(l)
-		// console.log(r)
-		
-		sphere.object3D.position.x = l
-		sphere2.object3D.position.y = r
-		sphere3.object3D.position.x = l
-		box.object3D.position.y = r
-		box2.object3D.position.x = r
-		box3.object3D.position.z = l
-		cyl.object3D.position.y = r
-		cyl2.object3D.position.x = l
-		cyl3.object3D.position.z = r
-	
+		var l_gamma = lchan_powerspectrum.gamma
+		var r_gamma = rchan_powerspectrum.gamma
+
+		whale1.object3D.rotation.y = whale1.object3D.rotation.y + l_gamma
+		whale1.object3D.position.x = whale1.object3D.position.x + r_gamma
+		whale1.object3D.position.y = whale1.object3D.position.y + l_gamma
+		whale1.object3D.position.z = whale1.object3D.position.z + r_gamma
+		angler1.object3D.scale.x = angler1.object3D.scale.x + (0.2 * breathcycle)
+		angler1.object3D.scale.y = angler1.object3D.scale.y + (0.2 * breathcycle)
+		angler1.object3D.scale.z = angler1.object3D.scale.z + (0.2 * breathcycle)
+		/*
+		goldfish1.object3D.rotation.x = r
+		koifish1.object3D.rotation.x = r
+		koifish1.object3D.position.z = koifish1.object3D.position.z + (2 * breathcycle)
+		eel1.object3D.rotation.x = eel1.object3D.rotation.z + r
+		eel1.object3D.position.x = eel1.object3D.rotation.z + r		
+		octopus1.object3D.position.x = octopus1.object3D.position.x + r
+		octopus1.object3D.rotation.y = octopus1.object3D.position.z + r
+		seahorse1.object3D.position.x = seahorse1.object3D.position.x + r
+		seahorse1.object3D.rotation.y = seahorse1.object3D.position.z + r
+		*/
 	};
 
 document.querySelector('a-scene'),addEventListener('raycaster-intersected', function (e) {

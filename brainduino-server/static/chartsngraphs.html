@@ -27,9 +27,7 @@
         <div class="row">
           <div class="col-sm-4" id="chan1">
             <div class="thumbnail">
-              <input type="hidden" value="1" href="http://localhost:8080/">
-                <svg id="timeserieschan1"></svg>
-              </input>
+                <svg id="timeserieschan1" viewBox="0 0 440 190" preserveAspectRatio="xMidYMid"></svg>
             </div>
             <div class="thumbnail">
 	      <canvas id="fftchan1" width="200" height="100"></canvas>
@@ -37,9 +35,7 @@
           </div>
           <div class="col-sm-4" id="chan2">
             <div class="thumbnail">
-              <input type="hidden" value="2" href="http://localhost:8080/">
-                <svg id="timeserieschan2"></svg>
-              </input>
+                <svg id="timeserieschan2" viewBox="0 0 440 190" preserveAspectRatio="xMidYMid"></svg>
             </div>
             <div class="thumbnail">
 	      <canvas id="fftchan2" width="200" height="100"></canvas>
@@ -78,9 +74,9 @@
 		    var n = 250;
 		    var data = d3.range(n).map(function() {return 0});
 
-		    var margin = {top: 20, right: 5, bottom: 20, left: 40},
-			width = 440 - margin.left - margin.right,
-			height = 190 - margin.top - margin.bottom;
+		    var margin = {top: 20, right: 5, bottom: 20, left: 40};
+		    var width = 440 - margin.left - margin.right;
+		    var height = 190 - margin.top - margin.bottom;
 
 		    var x = d3.scaleLinear()
 			.domain([0, n - 1])

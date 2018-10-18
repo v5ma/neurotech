@@ -20,7 +20,7 @@ var brainduinopath string
 var mock bool
 
 func init() {
-	flag.StringVar(&url, "url", "0.0.0.0:8080", "url to serve on")
+	flag.StringVar(&url, "url", "0.0.0.0:80", "url to serve on")
 	flag.StringVar(&indexfile, "indexfile", "./static/index.html", "path to index.html")
 	flag.StringVar(&brainduinopath, "brainduinopath", "", "path to brainduino serial device")
 	flag.StringVar(&chartsngraphsfile, "chartsngraphsfile", "./static/chartsngraphs.html", "path to chartsngraphs.html")
