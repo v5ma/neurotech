@@ -99,7 +99,7 @@
 	// you can then get a color for a specific value like Lut.getColor(15.67)
 	colors_lut = new THREE.Lut('rainbow', 512)
 	colors_lut.setMin(0)
-	colors_lut.setMax(0.65)
+	colors_lut.setMax(6.5)
 
 	ws.onmessage = function (event) {
 	
@@ -158,7 +158,7 @@
 			  // calculate the vertex/point index that we're going to update,
 			  // as well as the color
 			  vertice_idx = generation * 10 + (+idx)
-			  scaled_value = data[idx]
+			  scaled_value = data[idx] * 10
 			  point_color = colors_lut.getColor(scaled_value)
 
 			  // here we manipulated the spectrograph mesh geometry and vertex colors.

@@ -113,16 +113,21 @@ func (b *Brainduino) fftloop() {
 	// assumes b.numchan == 2
 	ctr := 0
 	var seqnum uint
-	fftdata0 := make([]float64, 250)
-	fftdata1 := make([]float64, 250)
+	fftsize := 256
+	fftdata0 := make([]float64, fftsize)
+	fftdata1 := make([]float64, fftsize)
 	rawlistener := make(chan interface{})
 	b.rawBroadcaster.Register(rawlistener)
 	for {
 		s := <-rawlistener
 		sample := s.(Sample)
-		fftdata0[ctr%250] = sample.Channels[0]
-		fftdata1[ctr%250] = sample.Channels[1]
-		if ctr%250 == 0 {
+		fftdata0[ctr%fftsize] = sample.Channels[0]
+		fftdata1[ctr%fftsize] = sample.Channels[1]
+		// Set the frequency that the FFT is sent out.
+		// e.g. ctr%2==0, every other sample
+		//      ctr%10==0, every 10th sample
+		//      ctr%250==0, every 250th sample
+		if ctr%4 == 0 {
 			fftd := FFTData{
 				Name:           "fft",
 				Channels:       make([][]float64, b.numchan),
