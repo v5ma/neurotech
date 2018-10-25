@@ -35,6 +35,8 @@ func getSystemBrainduinoDevicePath() string {
 		basestr := "/dev/rfcomm"
 		for i := 0; i < 10; i++ {
 			basestr = strings.Join([]string{basestr, strconv.Itoa(i)}, "")
+			// On Debian, this will not work as when the device is connected, disconnected and reconnected there are now 2
+			// devices, /dev/rfcomm0 and /dev/rfcomm1. Perhaps in the FileInfo we can decipher which is the brainduino rfcomm device.
 			if _, err := os.Stat(basestr); !os.IsNotExist(err) {
 				return basestr
 			}

@@ -8,6 +8,17 @@ dep ensure
 go build
 sudo ./brainduino-server --url 0.0.0.0:80
 ```
+
+To commit changes to github at the end of the night
+```
+git add . --all
+git commit -m "<what's in the commit>"
+git push origin master
+```
+
+To inspect changes before committing try running `git status` or `git log`
+
+
 Event Schema
 ============
 ```
