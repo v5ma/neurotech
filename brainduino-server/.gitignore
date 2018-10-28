@@ -2,3 +2,5 @@
 *.swp
 /static/images/
 brainduino-server*
+brainduino/brainduino
+webserver/webserver

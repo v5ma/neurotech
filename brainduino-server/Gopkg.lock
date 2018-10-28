@@ -82,14 +82,6 @@
   version = "v1.4.0"
 
 [[projects]]
-  digest = "1:77395dd3847dac9c45118c668f5dab85aedf0163dc3b38aea6578c5cf0d502f9"
-  name = "github.com/hashicorp/go-version"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "b5a281d3160aa11950a6182bd9a9dc2cb1e02d50"
-  version = "v1.0.0"
-
-[[projects]]
   branch = "master"
   digest = "1:be0e14e780a05a33d034ff3a33c385a383a028c84df710a95ec402062df025c3"
   name = "github.com/iris-contrib/formBinder"
@@ -138,7 +130,7 @@
   revision = "03be101463868edc5a81f094fc68a5f6c1b5503a"
 
 [[projects]]
-  digest = "1:fa2e0692b16f98435b76536d888391f060d312d2e4ba03af9391b47903672ae3"
+  digest = "1:2fd73113abbd13fb4788410a54b87e429260909b59e193f5130ee30b17479e18"
   name = "github.com/kataras/iris"
   packages = [
     ".",
@@ -153,25 +145,23 @@
     "core/errors",
     "core/handlerconv",
     "core/host",
-    "core/maintenance",
-    "core/maintenance/version",
     "core/memstore",
     "core/netutil",
     "core/router",
-    "core/router/macro",
-    "core/router/macro/interpreter/ast",
-    "core/router/macro/interpreter/lexer",
-    "core/router/macro/interpreter/parser",
-    "core/router/macro/interpreter/token",
-    "core/router/node",
+    "macro",
+    "macro/handler",
+    "macro/interpreter/ast",
+    "macro/interpreter/lexer",
+    "macro/interpreter/parser",
+    "macro/interpreter/token",
     "middleware/logger",
     "middleware/recover",
     "view",
     "websocket",
   ]
   pruneopts = "UT"
-  revision = "217d9feadc0fc5b317826a901065e0c4c27d3cad"
-  version = "10.7.0"
+  revision = "934e668595ae357fae895002fe5d7e2252f1e315"
+  version = "v11.0.0"
 
 [[projects]]
   branch = "master"
@@ -183,18 +173,6 @@
   ]
   pruneopts = "UT"
   revision = "a9733b5b6b83d32b479aacd51d26ef6018261963"
-
-[[projects]]
-  branch = "v2"
-  digest = "1:f07bdc2e8067cea1616c6f770760b5e21700ac9c8d1ca3bbbc735eec659fbefc"
-  name = "github.com/kataras/survey"
-  packages = [
-    ".",
-    "core",
-    "terminal",
-  ]
-  pruneopts = "UT"
-  revision = "00934ae069eda15df26fa427ac393e67e239380c"
 
 [[projects]]
   digest = "1:bc00f32084cbf3d1af8adf273c7dc132d55d88762231c0c26c136e576feddb55"
@@ -214,30 +192,6 @@
   pruneopts = "UT"
   revision = "ae7887de9fa5d2db4eaa8174a7eff2c1ac00f2da"
   version = "v1.1"
-
-[[projects]]
-  digest = "1:c658e84ad3916da105a761660dcaeb01e63416c8ec7bc62256a9b411a05fcd67"
-  name = "github.com/mattn/go-colorable"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "167de6bfdfba052fa6b2d3664c8f5272e23c9072"
-  version = "v0.0.9"
-
-[[projects]]
-  digest = "1:0981502f9816113c9c8c4ac301583841855c8cf4da8c72f696b3ebedf6d0e4e5"
-  name = "github.com/mattn/go-isatty"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "6ca4dbf54d38eea1a992b3c722a76a5d1c4cb25c"
-  version = "v0.0.4"
-
-[[projects]]
-  branch = "master"
-  digest = "1:2b32af4d2a529083275afc192d1067d8126b578c7a9613b26600e4df9c735155"
-  name = "github.com/mgutz/ansi"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "9520e82c474b0a04dd04f8a40959027271bab992"
 
 [[projects]]
   branch = "master"
@@ -362,18 +316,19 @@
   revision = "646308596abc3fd896ed699fee08a546c89e0116"
 
 [[projects]]
-  branch = "v2"
   digest = "1:342378ac4dcb378a5448dd723f0784ae519383532f5e70ade24132c4c8693202"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   pruneopts = "UT"
   revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
+  version = "v2.2.1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
     "github.com/dustin/go-broadcast",
+    "github.com/gorilla/websocket",
     "github.com/jacobsa/go-serial/serial",
     "github.com/kataras/iris",
     "github.com/kataras/iris/websocket",

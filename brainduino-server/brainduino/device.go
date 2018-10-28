@@ -113,16 +113,21 @@ func (b *Brainduino) fftloop() {
 	// assumes b.numchan == 2
 	ctr := 0
 	var seqnum uint
-	fftdata0 := make([]float64, 250)
-	fftdata1 := make([]float64, 250)
+	fftsize := 256
+	fftdata0 := make([]float64, fftsize)
+	fftdata1 := make([]float64, fftsize)
 	rawlistener := make(chan interface{})
 	b.rawBroadcaster.Register(rawlistener)
 	for {
 		s := <-rawlistener
 		sample := s.(Sample)
-		fftdata0[ctr%250] = sample.Channels[0]
-		fftdata1[ctr%250] = sample.Channels[1]
-		if ctr%250 == 0 {
+		fftdata0[ctr%fftsize] = sample.Channels[0]
+		fftdata1[ctr%fftsize] = sample.Channels[1]
+		// Set the frequency that the FFT is sent out.
+		// e.g. ctr%2==0, every other sample
+		//      ctr%10==0, every 10th sample
+		//      ctr%250==0, every 250th sample
+		if ctr%4 == 0 {
 			fftd := FFTData{
 				Name:           "fft",
 				Channels:       make([][]float64, b.numchan),
@@ -141,6 +146,67 @@ func (b *Brainduino) fftloop() {
 
 func (b *Brainduino) readloop() {
 	// assumes b.numchan == 2
+	// works with 3 tabs per sample
+	buf := make([]byte, 14)
+	chans := make([][]byte, b.numchan)
+	for i := 0; i < b.numchan; i++ {
+		chans[i] = make([]byte, b.wordsize)
+	}
+
+	ctr := 0
+	tabctr := 0
+	incmdseq := false
+
+	ts := time.Now()
+	var seqnum uint
+	for {
+		n, err := b.Read(buf)
+		if err != nil {
+			fmt.Printf("Failed to read brainduino: %s\n", err)
+			continue
+		}
+		ts = time.Now()
+		for _, val := range buf[:n] {
+			if !b.isdatabyte(val) {
+				incmdseq = true
+				continue
+			}
+
+			if incmdseq && val == '\x0D' {
+				incmdseq = false
+				continue
+			}
+
+			if val == '\r' {
+				sample := Sample{
+					Name:           "sample",
+					Channels:       make([]float64, b.numchan),
+					Timestamp:      ts,
+					SequenceNumber: seqnum,
+				}
+				for i := 0; i < b.numchan; i++ {
+					sample.Channels[i] = b.adcnorm(b.offsetBinaryToInt(chans[i]))
+					chans[i] = []byte{'\x00', '\x00', '\x00', '\x00', '\x00', '\x00'}
+				}
+				b.rawBroadcaster.Submit(sample)
+				seqnum++
+				tabctr = 0
+				ctr = 0
+			} else if val == '\t' {
+				tabctr++
+			} else if (tabctr == 0 || tabctr == 1) && b.isdatabyte(val) {
+				chans[0][ctr%6] = val
+				ctr++
+			} else if (tabctr == 2 || tabctr == 3) && b.isdatabyte(val) {
+				chans[1][ctr%6] = val
+				ctr++
+			}
+		}
+	}
+}
+
+func (b *Brainduino) readloopX() {
+	// assumes b.numchan == 2
 	buf := make([]byte, 14)
 	chans := make([][]byte, b.numchan)
 	for i := 0; i < b.numchan; i++ {
@@ -155,6 +221,7 @@ func (b *Brainduino) readloop() {
 	var seqnum uint
 	for {
 		n, err := b.Read(buf)
+		fmt.Printf("%v", buf)
 		if err != nil {
 			fmt.Printf("Failed to read brainduino: %s\n", err)
 			continue

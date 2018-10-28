@@ -16,10 +16,11 @@ func (wst *WebsocketTunnel) HandleEeg(c websocket.Connection) {
 		fmt.Printf("websocket connection closed with identifer: %s\n", c.ID())
 	})
 	c.OnError(func(err error) {
-		fmt.Printf("websocket connected error with identifier: %s\t%s\n", c.ID(), err)
+		fmt.Printf("websocket connection error with identifier: %s\t[%s]\n", c.ID(), err)
 	})
 	c.OnMessage(func(data []byte) {
 		for _, clic := range wst.cliconnections {
+			fmt.Printf("%s\n", data)
 			clic.EmitMessage(data)
 		}
 	})

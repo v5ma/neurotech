@@ -4,51 +4,38 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"net/url"
 	"os"
-	"strconv"
-	"strings"
+	"os/signal"
 
 	"github.com/gorilla/websocket"
 	"github.com/jacobsa/go-serial/serial"
 )
 
-var url string
-var chartsngraphsfile string
+const eegpath = "/ws/eeg"
+
+var addr string
 var brainduinopath string
 var mock bool
 
 func init() {
-	flag.StringVar(&url, "url", "0.0.0.0:80", "url to serve on")
-	flag.StringVar(&brainduinopath, "brainduinopath", "", "path to brainduino serial device")
-	flag.StringVar(&chartsngraphsfile, "chartsngraphsfile", "./static/chartsngraphs.html", "path to chartsngraphs.html")
+	flag.StringVar(&addr, "addr", "0.0.0.0:80", "addr to serve on")
+	flag.StringVar(&brainduinopath, "brainduinopath", "/dev/rfcomm0", "path to brainduino serial device")
 	flag.BoolVar(&mock, "mock", false, "to mock, or not to mock")
 	flag.Parse()
 }
 
-func getSystemBrainduinoDevicePath() string {
-	if len(brainduinopath) > 0 {
-		return brainduinopath
-	} else {
-		basestr := "/dev/rfcomm"
-		for i := 0; i < 10; i++ {
-			basestr = strings.Join([]string{basestr, strconv.Itoa(i)}, "")
-			// On Debian, this will not work as when the device is connected, disconnected and reconnected there are now 2
-			// devices, /dev/rfcomm0 and /dev/rfcomm1. Perhaps in the FileInfo we can decipher which is the brainduino rfcomm device.
-			if _, err := os.Stat(basestr); !os.IsNotExist(err) {
-				return basestr
-			}
-		}
-	}
-	return "not found"
-}
-
 func main() {
+	// shutdown hook
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt)
+
 	// init brainduino
 	var device io.ReadWriteCloser
 	var err error
 	if !mock {
 		device, err = serial.Open(serial.OpenOptions{
-			PortName:              getSystemBrainduinoDevicePath(),
+			PortName:              brainduinopath,
 			BaudRate:              230400,
 			InterCharacterTimeout: 100, // In milliseconds
 			MinimumReadSize:       14,  // In bytes
@@ -68,19 +55,38 @@ func main() {
 	}
 
 	b := NewBrainduino(device)
-	defer b.Close()
 
 	rawlistener := make(chan interface{})
 	b.Register(SampleListener, rawlistener)
-	defer b.Unregister(SampleListener, rawlistener)
 
-	fftlistener := make(chan interface{})
-	b.Register(FFTListener, fftlistener)
-	defer b.Unregister(FFTListener, fftlistener)
-	
+	wsendpoint := url.URL{Scheme: "ws", Host: addr, Path: eegpath}
+	fmt.Printf("Connecting to %s\n", wsendpoint.String())
+	c, _, err := websocket.DefaultDialer.Dial(wsendpoint.String(), nil)
+	if err != nil {
+		fmt.Printf("error dial websocket eeg endpoint: %s\n", err)
+		return
+	}
+	fmt.Printf("Connected to %s\n", wsendpoint.String())
+
 	for {
-		switch {
-		case d := <- rawlistener:
+		select {
+		case d := <-rawlistener:
+			d = d.(Sample)
+			err = c.WriteJSON(d)
+			if err != nil {
+				fmt.Printf("error marshaling rawlistener data to json: %s\n", err)
+			}
+		case <-interrupt:
+			fmt.Println("Shutting down")
+			b.Unregister(SampleListener, rawlistener)
+			b.Close()
+			err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+			if err != nil {
+				fmt.Println("write close:", err)
+				return
+			}
+			c.Close()
+			return
 		}
 	}
 }

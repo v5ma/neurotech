@@ -13,7 +13,7 @@ var chartsngraphsfile string
 
 func init() {
 	flag.StringVar(&url, "url", "0.0.0.0:80", "url to serve on")
-	flag.StringVar(&indexfile, "indexfile", "../static/index.html", "path to index.html")
+	flag.StringVar(&indexfile, "indexfile", "./static/index.html", "path to index.html")
 	flag.StringVar(&chartsngraphsfile, "chartsngraphsfile", "./static/chartsngraphs.html", "path to chartsngraphs.html")
 	flag.Parse()
 }
@@ -29,22 +29,8 @@ func main() {
 	app.Get("/chartsngraphs", func(ctx iris.Context) {
 		ctx.ServeFile(chartsngraphsfile, false)
 	})
-	/*
-		app.Post("/command/{id:string}", func(ctx iris.Context) {
-			id := ctx.Params().Get("id")
-			if !isValidCommand(id) {
-				ctx.StatusCode(iris.StatusInternalServerError)
-				ctx.Writef("Internal Server Error: %s command not supported\n", id)
-				return
-			}
-			_, err := b.Write([]byte(id))
-			if err != nil {
-				fmt.printf("Error writing to brainduino: %s\n", err)
-			}
-		})
-	*/
 
-	wst := WebsocketTunnel{
+	wst := &WebsocketTunnel{
 		cliconnections: make([]websocket.Connection, 0),
 	}
 

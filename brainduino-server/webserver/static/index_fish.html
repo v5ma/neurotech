@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Hello, WebVR! • A-Frame</title>
+    <meta name="description" content="Hello, WebVR! • A-Frame">
+
+    <script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>
+    <script src="https://cdn.rawgit.com/archilogic-com/aframe-gblock/6498b71d/dist/gblock.js"></script>	
+    <a-scene>
+      <a-assets>
+        <img id="skyTexture"
+         src="./static/images/undersea.png">
+      </a-assets>
+
+      <a-sky src="#skyTexture"></a-sky>
+      <a-entity id="whale1" position="5 -5 -10" rotation="0 0 0" scale="0.25 0.25 0.25" gblock="https://poly.google.com/view/15cXqVGk0jA"
+
+eventclick></a-entity>
+      <a-entity id="angler1" position="-5 -5 -10" rotation="0 0 0" scale="1 1 1" gblock="https://poly.google.com/view/egy6iroNVQv"></a-entity>
+      <a-entity id="goldfish1" position="-5 5 -10" rotation="0 0 0" scale="0.015 0.015 0.005" gblock="https://poly.google.com/view/0bOZGc8ONrx"></a-entity>
+      <a-entity id="koifish1" position="5 5 -10" rotation="0 0 0" scale="1 1 1" gblock="https://poly.google.com/view/4ZDrp2YjJzC"></a-entity>
+      <a-entity id="eel1" position="-10 4 -7" rotation="0 0 0" scale=".005 .005 .005" gblock="https://poly.google.com/view/eRb-GgLCnA7"></a-entity>
+      <a-entity id="octopus1" position="-10 0 0" rotation="0 0 0" scale="1 1 1" gblock="https://poly.google.com/view/2pehCIARR11"></a-entity>
+      <a-entity id="octopus2" position="-6 -2 -2" rotation="0 0 0" scale=".3 .3 .3" gblock="https://poly.google.com/view/9-b6-yqrwEe"></a-entity>
+      <a-entity id="seahorse1" position="-5 0 0" rotation="0 0 0" scale="1 1 1" gblock="https://poly.google.com/view/3H4CqcG6JGP"></a-entity>
+
+
+      <!-- Camera + cursor. -->
+      <a-entity camera look-controls>
+      <a-cursor id="cursor"
+       animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150"
+       animation__fusing="property: fusing; startEvents: fusing; from: 1 1 1; to: 0.1 0.1 0.1; dur: 1500"
+       event-set__1="_event: mouseenter; color: springgreen"
+       event-set__2="_event: mouseleave; color: black"
+       event-set__3="_event: click; color: red"
+       fuse="true"
+       raycaster="objects: .link"></a-cursor>
+      </a-entity>
+<a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
+<a-entity gearvr-controls></a-entity><a-entity laser-controls line="color: red; opacity: 0.75"></a-entity>
+
+    </a-scene>
+    
+    <script>
+
+
+   	// The id references a single element in the above html
+	whale1 = document.getElementById("whale1")
+	angler1 = document.getElementById("angler1")
+	goldfish1 = document.getElementById("goldfish1")
+	koifish1 = document.getElementById("koifish1")
+	eel1 = document.getElementById("eel1")
+	octopus1 = document.getElementById("octopus1")
+	octopus2 = document.getElementById("octopus2")
+	seahorse1 = document.getElementById("seahorse1")
+	  
+        // provides a stream of data after main.py has been run.
+	var ws = new WebSocket("ws://alpine-unicorn.noise/ws")
+	
+	ws.onmessage = function (event) {
+
+
+		// test animation loop
+// 		octopus2.object3D.translatex(0.001)
+		
+		octopus2.object3D.rotateY(0.0003)
+		
+		// created an array here to read out data from the arduino chip.
+		// We split with a space. The first value is the right reader, 
+		// the second is the left reader.
+		var data = JSON.parse(event.data);
+		if (data.Name == "fft") {
+			var fft_readings = data.Channels;
+			// Normalize the channels
+			// Ex: [1, 2, 3, 4] => [0.1, 0.2, 0.3, 0.4]
+			// Ex: [10, 20, 30, 40] => [0.1, 0.2, 0.3, 0.4]
+			var lchan_sum = fft_readings[0].reduce(function(x, y) { return x + y }, 0)
+			fft_readings[0] = fft_readings[0].map(function(x) { return x / lchan_sum })
+			var rchan_sum = fft_readings[1].reduce(function(x, y) { return x + y }, 0)
+			fft_readings[1] = fft_readings[1].map(function(x) { return x / rchan_sum })
+			var lchans = {"gamma":fft_readings[0].slice(32, fft_readings[0].length).reduce(function(x, y) { return  x + y }, 0),
+						   "beta" :fft_readings[0].slice(16, 32).reduce(function(x, y) { return x + y }, 0),
+						   "alpha":fft_readings[0].slice(8, 16).reduce(function(x, y) { return x + y }, 0),
+						   "theta":fft_readings[0].slice(4, 8).reduce(function(x, y) { return x + y }, 0),
+						   "delta":fft_readings[0].slice(0, 4).reduce(function(x, y) { return x + y }, 0)}
+			var rchans = {"gamma":fft_readings[1].slice(32, fft_readings[1].length).reduce(function(x, y) { return x + y }, 0),
+						   "beta" :fft_readings[1].slice(16, 32).reduce(function(x, y) { return x + y }, 0),
+						   "alpha":fft_readings[1].slice(8, 16).reduce(function(x, y) { return x + y }, 0),
+						   "theta":fft_readings[1].slice(4, 8).reduce(function(x, y) { return x + y }, 0),
+						   "delta":fft_readings[1].slice(0, 4).reduce(function(x, y) { return x + y }, 0)}
+			//console.log(lchan_sum);
+			console.log(lchans.gamma);
+			//console.log(lchans.beta);
+			//console.log(lchans.alpha);
+			//console.log(lchans.theta);
+			//console.log(lchans.delta);
+			//console.log(rchan_sum);
+		} else if (data.Name == "sample") {
+			var eeg_readings = data.Channels;
+			return
+		}
+
+		// changing the string to a decimal by dividing or 
+		// multiplying the strings given by our raw data
+		// there is too much variance. Division, modifies the range of physical 
+		// bounds variance but not the time update variance
+		// var l = (eeg_readings[0] * 1)
+		// var r = (eeg_readings[1] * 1)
+		var lgamma = lchans.gamma
+		var rgamma = rchans.gamma		
+		var lbeta = lchans.beta
+		var rbeta = rchans.beta
+		var lalpha = lchans.alpha
+		var ralpha = rchans.alpha
+		var ltheta = lchans.theta
+		var rtheta = rchans.theta
+		var ldelta = lchans.delta
+		var rdelta = rchans.delta
+		
+		whale1.object3D.rotation.y = lbeta
+		whale1.object3D.rotation.x = rbeta
+		whale1.object3D.scale.y = lbeta
+		whale1.object3D.scale.x = lbeta
+		whale1.object3D.scale.z = rbeta
+		whale1.object3D.rotation.z = lbeta
+		angler1.object3D.scale.x = ralpha
+		angler1.object3D.scale.y = lalpha
+		angler1.object3D.scale.z = rtheta
+		goldfish1.object3D.rotation.x = lalpha
+		koifish1.object3D.rotation.x = ltheta
+		koifish1.object3D.position.z = ldelta
+		eel1.object3D.rotation.x = rdelta
+		eel1.object3D.position.x = ltheta	
+		octopus1.object3D.position.x = lgamma
+		octopus1.object3D.rotation.y = rgamma
+console.log(lgamma)
+		octopus2.object3D.position.x = lgamma
+		// octopus2.object3D.rotation.y = rgamma
+		seahorse1.object3D.position.x = lbeta
+		seahorse1.object3D.rotation.y = lalpha
+		
+	};
+
+AFRAME.registerComponent('cursor-listener', {
+  init: function () {
+    var lastIndex = -1;
+    var Rotation = ['red', 'green', 'blue'];
+    this.el.addEventListener('click', function (evt) {
+      lastIndex = (lastIndex + 1) % COLORS.length;
+      this.setAttribute('material', 'color', COLORS[lastIndex]);
+     
+    });
+  }
+});
+
+
+
+document.querySelector('a-scene').addEventListener('raycaster-intersected', function (e) {
+      console.log(`${e.target.id} was hit.`);
+    });
+
+        
+        // y (0 - 4))
+        
+        // boxY = Math.random()*4
+        // sphereY = Math.random()*4
+        // cylY = Math.random()*4
+        
+        // moveShapes(boxY,sphereY,cylY)
+        
+     
+      
+    </script>
+  </body>
+</html>
