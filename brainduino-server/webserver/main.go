@@ -7,12 +7,12 @@ import (
 	"github.com/kataras/iris/websocket"
 )
 
-var url string
+var addr string
 var indexfile string
 var chartsngraphsfile string
 
 func init() {
-	flag.StringVar(&url, "url", "0.0.0.0:80", "url to serve on")
+	flag.StringVar(&addr, "addr", "0.0.0.0:80", "url to serve on")
 	flag.StringVar(&indexfile, "indexfile", "./static/index.html", "path to index.html")
 	flag.StringVar(&chartsngraphsfile, "chartsngraphsfile", "./static/chartsngraphs.html", "path to chartsngraphs.html")
 	flag.Parse()
@@ -50,5 +50,5 @@ func main() {
 	app.Get("/ws/eeg", wseeg.Handler())
 	app.Get("/ws/client", wscli.Handler())
 
-	app.Run(iris.Addr(url))
+	app.Run(iris.Addr(addr))
 }
