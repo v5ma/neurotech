@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/kataras/iris/websocket"
@@ -28,14 +27,14 @@ type WebsocketTunnel struct {
 }
 
 func (wst *WebsocketTunnel) HandleEeg(c websocket.Connection) {
-	fmt.Printf("websocket connection established with identifier: %s\n", c.ID())
+	LOG.Infof("websocket connection established with identifier: %s\n", c.ID())
 	rawlistener := make(chan []byte, 256)
 	go wst.fftloop(rawlistener)
 	c.OnDisconnect(func() {
-		fmt.Printf("websocket connection closed with identifer: %s\n", c.ID())
+		LOG.Infof("websocket connection closed with identifer: %s\n", c.ID())
 	})
 	c.OnError(func(err error) {
-		fmt.Printf("websocket connection error with identifier: %s\t[%s]\n", c.ID(), err)
+		LOG.Errorf("websocket connection error with identifier: %s\t[%s]\n", c.ID(), err)
 	})
 	c.OnMessage(func(data []byte) {
 		wst.broadcast(data)
@@ -44,12 +43,12 @@ func (wst *WebsocketTunnel) HandleEeg(c websocket.Connection) {
 }
 
 func (wst *WebsocketTunnel) HandleCli(c websocket.Connection) {
-	fmt.Printf("websocket connection established with identifier: %s\n", c.ID())
+	LOG.Infof("websocket connection established with identifier: %s\n", c.ID())
 	c.OnDisconnect(func() {
-		fmt.Printf("websocket connection closed with identifer: %s\n", c.ID())
+		LOG.Infof("websocket connection closed with identifer: %s\n", c.ID())
 	})
 	c.OnError(func(err error) {
-		fmt.Printf("websocket connected error with identifier: %s\t%s\n", c.ID(), err)
+		LOG.Errorf("websocket connected error with identifier: %s\t%s\n", c.ID(), err)
 	})
 	wst.cliconnections = append(wst.cliconnections, c)
 }
@@ -73,7 +72,7 @@ func (wst *WebsocketTunnel) fftloop(rawlistener chan []byte) {
 		sample := &Sample{}
 		err := json.Unmarshal(s, sample)
 		if err != nil {
-			fmt.Printf("error unmarshalling sample: %s\n", err)
+			LOG.Errorf("error unmarshalling sample: %s\n", err)
 		}
 		fftdata0[ctr%fftsize] = sample.Channels[0]
 		fftdata1[ctr%fftsize] = sample.Channels[1]
@@ -92,7 +91,7 @@ func (wst *WebsocketTunnel) fftloop(rawlistener chan []byte) {
 			fftd.Channels[1] = abs(fft.FFTReal(fftdata1))[:125]
 			jsonfft, err := json.Marshal(fftd)
 			if err != nil {
-				fmt.Printf("error marshalling fft data: %s\n", err)
+				LOG.Errorf("error marshalling fft data: %s\n", err)
 				continue
 			}
 			wst.broadcast(jsonfft)
