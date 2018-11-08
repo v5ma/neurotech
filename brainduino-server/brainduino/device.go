@@ -144,7 +144,7 @@ func (b *Brainduino) fftloop() {
 	}
 }
 
-func (b *Brainduino) readloop() {
+func (b *Brainduino) readloopX() {
 	// assumes b.numchan == 2
 	// works with 3 tabs per sample
 	buf := make([]byte, 14)
@@ -205,7 +205,7 @@ func (b *Brainduino) readloop() {
 	}
 }
 
-func (b *Brainduino) readloopX() {
+func (b *Brainduino) readloop() {
 	// assumes b.numchan == 2
 	buf := make([]byte, 14)
 	chans := make([][]byte, b.numchan)
@@ -221,7 +221,6 @@ func (b *Brainduino) readloopX() {
 	var seqnum uint
 	for {
 		n, err := b.Read(buf)
-		fmt.Printf("%v", buf)
 		if err != nil {
 			fmt.Printf("Failed to read brainduino: %s\n", err)
 			continue
