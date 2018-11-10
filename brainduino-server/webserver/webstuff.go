@@ -37,7 +37,7 @@ func (wst *WebsocketTunnel) HandleEeg(c websocket.Connection) {
 		LOG.Errorf("websocket connection error with identifier: %s\t[%s]\n", c.ID(), err)
 	})
 	c.OnMessage(func(data []byte) {
-		wst.broadcast(data)
+		// wst.broadcast(data)
 		rawlistener <- data
 	})
 }
@@ -55,7 +55,7 @@ func (wst *WebsocketTunnel) HandleCli(c websocket.Connection) {
 
 func (wst *WebsocketTunnel) broadcast(data []byte) {
 	for _, clic := range wst.cliconnections {
-		clic.EmitMessage(data)
+		go clic.EmitMessage(data)
 	}
 }
 
@@ -80,7 +80,7 @@ func (wst *WebsocketTunnel) fftloop(rawlistener chan []byte) {
 		// e.g. ctr%2==0, every other sample
 		//      ctr%10==0, every 10th sample
 		//      ctr%250==0, every 250th sample
-		if ctr%4 == 0 {
+		if ctr%16 == 0 {
 			fftd := FFTData{
 				Name:           "fft",
 				Channels:       make([][]float64, numchan),

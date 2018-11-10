@@ -31,7 +31,7 @@ func main() {
 	app := iris.New()
 
 	// set up logging
-	err := os.MkdirAll(path.Dir(logfile), os.ModeDir)
+	err := os.MkdirAll(path.Dir(logfile), 0755)
 	if err != nil {
 		fmt.Printf("Error making directory %s for logfile: %s\n", path.Dir(logfile), err)
 	}

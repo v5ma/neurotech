@@ -151,10 +151,11 @@
 	var updatefreq = 10;
 	var ctr = 0;
 	if (window["WebSocket"]) {
-		conn = new WebSocket("ws://alpine-unicorn.noise/ws");
+		conn = new WebSocket("ws://ml.sensorium.space/ws/eeg");
 
 		conn.onmessage = function(evt) {
 			rdata = JSON.parse(evt.data);
+	    		console.log(rdata);
 			if (rdata.Name == "sample") {
 				n1 = rawchan1buf.unshift(rdata.Channels[0]);
 				n2 = rawchan2buf.unshift(rdata.Channels[1]);
