@@ -77,11 +77,8 @@ func main() {
 		ctx.ServeFile(chartsngraphsfile, false)
 	})
 
-	wst := &WebsocketTunnel{
-		cliconnections: make([]websocket.Connection, 0),
-	}
-
 	// set up websocket routes
+	wst := NewWebsocketTunnel()
 	wseeg := websocket.New(websocket.Config{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
