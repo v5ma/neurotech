@@ -11,7 +11,7 @@
     <a-scene>
       <a-assets>
         <img id="skyTexture"
-         src="./static/images/undersea.png">
+         src="./static/imgs/undersea.png">
       </a-assets>
 
       <a-sky src="#skyTexture"></a-sky>
@@ -146,7 +146,7 @@
 
 
 						// provides a stream of data after main.py has been run.
-			var ws = new WebSocket("ws://ml.sensorium.space/ws/client");
+            var ws = new WebSocket("ws://{{ .addr }}/ws/client");
 			var a_scatter_plot = new ScatterPlot();
 			a_scatter_plot.join(scene);
 

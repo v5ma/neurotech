@@ -2,9 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"sync"
 	"time"
 
 	pubsub "github.com/dustin/go-broadcast"
+	"github.com/kataras/iris"
 	"github.com/kataras/iris/websocket"
 	"github.com/mjibson/go-dsp/fft"
 )
@@ -121,6 +123,70 @@ func (wst *WebsocketTunnel) fftloop(rawlistener chan []byte, donech chan bool) {
 			ctr++
 		case <-donech:
 			LOG.Info("Closing fftloop")
+			return
+		}
+	}
+}
+
+type DeviceRegistrations struct {
+	deviceRegistrations map[string]DeviceRegistration
+	m                   *sync.Mutex
+}
+
+func (drs *DeviceRegistrations) Put(dr DeviceRegistration) {
+	drs.m.Lock()
+	drs.deviceRegistrations[dr.Id] = dr
+	drs.m.Unlock()
+}
+
+func (drs *DeviceRegistrations) Get(id string) (DeviceRegistration, bool) {
+	drs.m.Lock()
+	dr, ok := drs.deviceRegistrations[id]
+	drs.m.Unlock()
+	return dr, ok
+}
+
+type DeviceRegistration struct {
+	Id         string            `json:"id"`
+	Properties map[string]string `json:"properties"`
+}
+
+func NewDeviceRegistrations() *DeviceRegistrations {
+	return &DeviceRegistrations{
+		deviceRegistrations: make(map[string]DeviceRegistration),
+		m:                   &sync.Mutex{},
+	}
+}
+
+func PostRegistration(drs *DeviceRegistrations) func(ctx iris.Context) {
+	return func(ctx iris.Context) {
+		var dr DeviceRegistration
+		err := ctx.ReadJSON(&dr)
+		if err != nil {
+			LOG.Errorf("Error decoding json in POST /device/registration: %s", err)
+			ctx.StatusCode(iris.StatusUnprocessableEntity)
+			return
+		}
+		drs.Put(dr)
+		LOG.Infof("Registered device with Id %s", dr.Id)
+	}
+}
+
+func GetRegistration(drs *DeviceRegistrations) func(ctx iris.Context) {
+	return func(ctx iris.Context) {
+		id := ctx.Params().Get("id")
+
+		dr, ok := drs.Get(id)
+		if !ok {
+			LOG.Errorf("Device id %s not found", id)
+			ctx.StatusCode(iris.StatusNotFound)
+			return
+		}
+
+		_, err := ctx.JSON(dr)
+		if err != nil {
+			LOG.Errorf("Error encoding device registration to json: %s", err)
+			ctx.StatusCode(iris.StatusInternalServerError)
 			return
 		}
 	}

@@ -12,18 +12,15 @@ import (
 	"github.com/kataras/iris/websocket"
 )
 
-var addr string
-var indexfile string
-var logfile string
-var chartsngraphsfile string
-
-var LOG *golog.Logger
+var (
+	addr    string
+	logfile string
+	LOG     *golog.Logger
+)
 
 func init() {
 	flag.StringVar(&addr, "addr", "0.0.0.0:80", "url to serve on")
-	flag.StringVar(&indexfile, "indexfile", "./static/index.html", "path to index.html")
-	flag.StringVar(&logfile, "logfile", "/var/log/brainduino/webserver.log", "path to webserver.log")
-	flag.StringVar(&chartsngraphsfile, "chartsngraphsfile", "./static/chartsngraphs.html", "path to chartsngraphs.html")
+	flag.StringVar(&logfile, "logfile", "", "path to log file, if no path then stdout")
 	flag.Parse()
 }
 
@@ -35,13 +32,18 @@ func main() {
 	if err != nil {
 		fmt.Printf("Error making directory %s for logfile: %s\n", path.Dir(logfile), err)
 	}
-	f, err := os.OpenFile(logfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		fmt.Printf("Error opening logfile %s: %s\n", logfile, err)
+	var logf *os.File
+	if logfile == "" {
+		logf = os.Stdout
+	} else {
+		logf, err = os.OpenFile(logfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			fmt.Printf("Error opening logfile %s: %s\n", logfile, err)
+		}
 	}
 
 	defaultLogger := app.Logger()
-	defaultLogger.SetOutput(f)
+	defaultLogger.SetOutput(logf)
 	LOG = defaultLogger
 	defaultLogger.Info("server starting")
 
@@ -57,9 +59,6 @@ func main() {
 		// Query appends the url query to the Path.
 		Query: true,
 
-		//Columns: true,
-
-		// if !empty then its contents derives from `ctx.Values().Get("logger_message")
 		// will be added to the logs.
 		MessageContextKeys: []string{"logger_message"},
 
@@ -68,14 +67,22 @@ func main() {
 	})
 	app.Use(customLogger)
 
-	// set up http routes
-	app.StaticWeb("/static", "./static")
+	// set up static http routes
+	app.StaticWeb("/static/imgs", "./static/imgs")
+	app.RegisterView(iris.HTML("./static/views", ".html").Reload(true))
 	app.Get("/", func(ctx iris.Context) {
-		ctx.ServeFile(indexfile, false)
+		ctx.ViewData("addr", addr)
+		ctx.View("index.html")
 	})
-	app.Get("/chartsngraphs", func(ctx iris.Context) {
-		ctx.ServeFile(chartsngraphsfile, false)
+	app.Get("/", func(ctx iris.Context) {
+		ctx.ViewData("addr", addr)
+		ctx.View("chartsngraphs.html")
 	})
+
+	// set up rest routes
+	deviceRegistrations := NewDeviceRegistrations()
+	app.Post("/device/registration", PostRegistration(deviceRegistrations))
+	app.Get("/device/registration/{id:string}", GetRegistration(deviceRegistrations))
 
 	// set up websocket routes
 	wst := NewWebsocketTunnel()
@@ -94,6 +101,9 @@ func main() {
 	app.Get("/ws/eeg", wseeg.Handler())
 	app.Get("/ws/client", wscli.Handler())
 
-	defaultLogger.Info("Server started")
-	app.Run(iris.Addr(addr))
+	defaultLogger.Info("server started")
+	app.Run(iris.Addr(addr), iris.WithConfiguration(iris.Configuration{
+		DisableStartupLog:   true,
+		EnableOptimizations: true,
+	}))
 }
