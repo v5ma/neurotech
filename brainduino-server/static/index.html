@@ -2,12 +2,27 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Hello, WebVR! • A-Frame</title>
+    <title>Neurohaxor Scatterplot Spectrogram in WebVR</title>
     <meta name="description" content="Hello, WebVR! • A-Frame">
 
     <script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>
     <script src="https://threejs.org/examples/js/math/Lut.js"></script>
-    <script src="https://cdn.rawgit.com/archilogic-com/aframe-gblock/6498b71d/dist/gblock.js"></script>	
+    <script src="https://cdn.rawgit.com/archilogic-com/aframe-gblock/6498b71d/dist/gblock.js"></script>
+    <script src="https://rawgit.com/blairmacintyre/aframe-look-at-billboard-component/master/dist/aframe-look-at-billboard-component.min.js"></script>
+
+
+<!--
+    The event-set component gives you a quick way to add events
+    to elements (like click, mouseenter, mouseleave, mousedown, mouseup, and fusing)
+    without having to write Javascript for each event.
+    
+    For example if you want to give the user feedback when they hover over the element,
+    you can do event-set__enter="_event: mouseenter; material.color: blue"
+    -->
+    <script src="https://unpkg.com/aframe-event-set-component@^4.0.0/dist/aframe-event-set-component.min.js"></script>
+    
+
+</script>	
     <a-scene>
       <a-assets>
         <img id="skyTexture"
@@ -17,42 +32,63 @@
       <a-sky src="#skyTexture"></a-sky>
       
 
-      <!-- Camera + cursor. -->
-      <a-entity camera look-controls>
-      <a-cursor id="cursor"
-       animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150"
-       animation__fusing="property: fusing; startEvents: fusing; from: 1 1 1; to: 0.1 0.1 0.1; dur: 1500"
-       event-set__1="_event: mouseenter; color: springgreen"
-       event-set__2="_event: mouseleave; color: black"
-       event-set__3="_event: click; color: red"
-       fuse="true"
-       raycaster="objects: .link"></a-cursor>
-      </a-entity>
-<a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
-<a-entity gearvr-controls></a-entity><a-entity laser-controls line="color: red; opacity: 0.75"></a-entity>
-<a-entity position="4.5 -0.2 -5" rotation="0 0 30" text="font: aileronsemibold; width: 6.5; anchor: center; align: center; color: white; value: rgamma"></a-entity>
-<a-entity position="3.5 -0.2 -5" rotation="0 0 30" text="font: aileronsemibold; width: 6.5; anchor: center; align: center; color: white; value: rbeta"></a-entity>
-<a-entity position="2.5 -0.2 -5" rotation="0 0 30" text="font: aileronsemibold; width: 6.5; anchor: center; align: center; color: white; value: ralpha"></a-entity>
-<a-entity position="1.5 -0.2 -5" rotation="0 0 30" text="font: aileronsemibold; width: 6.5; anchor: center; align: center; color: white; value: rtheta"></a-entity>
-<a-entity position="0.5 -0.2 -5" rotation="0 0 30" text="font: aileronsemibold; width: 6.5; anchor: center; align: center; color: white; value: rdelta"></a-entity>
-<a-entity position="-0.5 -0.2 -5" rotation="0 0 30" text="font: aileronsemibold; width: 6.5; anchor: center; align: center; color: white; value: ldelta"></a-entity>
-<a-entity position="-1.5 -0.2 -5" rotation="0 0 30" text="font: aileronsemibold; width: 6.5; anchor: center; align: center; color: white; value: ltheta"></a-entity>
-<a-entity position="-2.5 -0.2 -5" rotation="0 0 30" text="font: aileronsemibold; width: 6.5; anchor: center; align: center; color: white; value: lalpha"></a-entity>
-<a-entity position="-3.5 -0.2 -5" rotation="0 0 30" text="font: aileronsemibold; width: 6.5; anchor: center; align: center; color: white; value: lbeta"></a-entity>
-<a-entity position="-4.5 -0.2 -5" rotation="0 0 30" text="font: aileronsemibold; width: 6.5; anchor: center; align: center; color: white; value: lgamma"></a-entity>
+      <!-- Camera, cursor, controller -->
+      <a-camera look-controls wasd-controls position="0 2 0"><a-cursor position="0 0 -1.5" fuse="false"></a-cursor></a-camera>
+      <a-entity oculus-go-controls></a-entity>
+      <a-entity laser-controls raycaster="objects: .clickable; .links; far: 50" line="color: red; opacity: 0.75"></a-entity>
+
+
+
+
+<a-box color="blue" height="-.1" width="10" depth="30" position="0 0 -20">
+<a-animation attribute="rotation"
+		       dur="5000"
+		       easing="linear"
+		       fill="forwards"
+		       to="0 90 0"
+		       direction="alternate"
+		       begin="click"></a-animation>
+
+<a-entity id="scatter_plot_container" position="0 1 0">
+	
+<a-entity id="scatter_plot" position="0 0 0"></a-entity>
+
+	<a-entity position="4.5 -0.2 16" rotation="0 0 30" text="font: aileronsemibold; width: 6.5; anchor: center; align: center; color: white; value: rgamma" billboard></a-entity>
+	<a-entity position="3.5 -0.2 16" rotation="0 0 30" text="font: aileronsemibold; width: 6.5; anchor: center; align: center; color: white; value: rbeta" billboard></a-entity>
+	<a-entity position="2.5 -0.2 16" rotation="0 0 30" text="font: aileronsemibold; width: 6.5; anchor: center; align: center; color: white; value: ralpha" billboard></a-entity>
+	<a-entity position="1.5 -0.2 16" rotation="0 0 30" text="font: aileronsemibold; width: 6.5; anchor: center; align: center; color: white; value: rtheta" billboard></a-entity>
+	<a-entity position="0.5 -0.2 16" rotation="0 0 30" text="font: aileronsemibold; width: 6.5; anchor: center; align: center; color: white; value: rdelta" billboard></a-entity>
+	<a-entity position="-0.5 -0.2 16" rotation="0 0 30" text="font: aileronsemibold; width: 6.5; anchor: center; align: center; color: white; value: ldelta" billboard></a-entity>
+	<a-entity position="-1.5 -0.2 16" rotation="0 0 30" text="font: aileronsemibold; width: 6.5; anchor: center; align: center; color: white; value: ltheta" billboard></a-entity>
+	<a-entity position="-2.5 -0.2 16" rotation="0 0 30" text="font: aileronsemibold; width: 6.5; anchor: center; align: center; color: white; value: lalpha" billboard></a-entity>
+	<a-entity position="-3.5 -0.2 16" rotation="0 0 30" text="font: aileronsemibold; width: 6.5; anchor: center; align: center; color: white; value: lbeta" billboard></a-entity>
+	<a-entity position="-4.5 -0.2 16" rotation="0 0 30" text="font: aileronsemibold; width: 6.5; anchor: center; align: center; color: white; value: lgamma" billboard></a-entity>
+</a-entity></a-box>
 <!-- <a-plane id="spectrograph_plane" wireframe="false" geometry="buffer: false" material="shader: flat; vertexColors: vertex" color="#fff" height="40" width="20" position="0 -5 -30" rotation="-90 180 0" segments-width="9" segments-height="99"></a-plane> -->
 
     </a-scene>
     
-    <script>
+<script>
 	// we're gonnaa programmatically interact with Three.js scene.
 	// adding objects and spraying magic dust
 	scene = document.querySelector("a-scene")
 	
+	/*
+	// get three.js object from aframe entity
+        var scatter_plot_container = document.querySelector('#scatter_plot_container');
+	var object = scatter_plot_container.getObject3D('mesh');
+
+	// compute bounding box
+	var bbox = new THREE.Box3().setFromObject(obj);
+	console.log(bbox.min, bbox.max)
+	*/
+
 	// scatter plot is a parent 3D object with nested sphere points.
 	// you can move the scatter_plot object, and all the points will follow.
-	scatter_plot = new THREE.Object3D()
-	scene.object3D.add(scatter_plot)
+	scatter_plot = document.getElementById("scatter_plot").object3D
+	//scene.object3D.add(scatter_plot)
+	plot_container = document.getElementById("scatter_plot_container")
+	plot_container.object3D.add(scatter_plot)
 	function create_sphere_point(radius) {
 		s = new THREE.Mesh(
 			new THREE.SphereGeometry(radius || 1, 16, 16),
@@ -70,7 +106,16 @@
 			sphere.position.x = j - 4.5
 		}
 	}
-	scatter_plot.position.z = -20
+	scatter_plot.position.z = -15
+	//plot_container.object3D.rotation.y = -90
+       
+ 
+
+	/*
+	document.addEventListener('click', function (evt) {
+		console.log('plot container clicked!')
+	});
+	*/
 	
 	  
 	// alternatively we tried to work with a mesh and manipulate it's points.
@@ -116,16 +161,16 @@
 			fft_readings[0] = fft_readings[0].map(function(x) { return x / lchan_sum })
 			var rchan_sum = fft_readings[1].reduce(function(x, y) { return x + y }, 0)
 			fft_readings[1] = fft_readings[1].map(function(x) { return x / rchan_sum })
-			var lchans = {"gamma":fft_readings[0].slice(32, fft_readings[0].length).reduce(function(x, y) { return  x + y }, 0),
-						   "beta" :fft_readings[0].slice(16, 32).reduce(function(x, y) { return x + y }, 0),
-						   "alpha":fft_readings[0].slice(8, 16).reduce(function(x, y) { return x + y }, 0),
-						   "theta":fft_readings[0].slice(4, 8).reduce(function(x, y) { return x + y }, 0),
-						   "delta":fft_readings[0].slice(0, 4).reduce(function(x, y) { return x + y }, 0)}
-			var rchans = {"gamma":fft_readings[1].slice(32, fft_readings[1].length).reduce(function(x, y) { return x + y }, 0),
-						   "beta" :fft_readings[1].slice(16, 32).reduce(function(x, y) { return x + y }, 0),
-						   "alpha":fft_readings[1].slice(8, 16).reduce(function(x, y) { return x + y }, 0),
-						   "theta":fft_readings[1].slice(4, 8).reduce(function(x, y) { return x + y }, 0),
-						   "delta":fft_readings[1].slice(0, 4).reduce(function(x, y) { return x + y }, 0)}
+			var lchans = {"gamma":fft_readings[0].slice(30, 45, fft_readings[1].length).reduce(function(x, y) { return  x + y }, 0),
+						   "beta" :fft_readings[0].slice(13, 30).reduce(function(x, y) { return x + y }, 0),
+						   "alpha":fft_readings[0].slice(8, 12).reduce(function(x, y) { return x + y }, 0),
+						   "theta":fft_readings[0].slice(4, 7.75).reduce(function(x, y) { return x + y }, 0),
+						   "delta":fft_readings[0].slice(2, 4).reduce(function(x, y) { return x + y }, 0)}
+			var rchans = {"gamma":fft_readings[1].slice(30, 45, fft_readings[1].length).reduce(function(x, y) { return x + y }, 0),
+						   "beta" :fft_readings[1].slice(13, 30).reduce(function(x, y) { return x + y }, 0),
+						   "alpha":fft_readings[1].slice(8, 12).reduce(function(x, y) { return x + y }, 0),
+						   "theta":fft_readings[1].slice(4, 7.75).reduce(function(x, y) { return x + y }, 0),
+						   "delta":fft_readings[1].slice(2, 4).reduce(function(x, y) { return x + y }, 0)}
 		} else if (data.Name == "sample") {
 			var eeg_readings = data.Channels;
 			return
@@ -184,6 +229,10 @@
 		// https://github.com/vintlucky777
 		// vintlucky777@gmail.com
 	};
+
+	
     </script>
+
+   
   </body>
 </html>

@@ -144,7 +144,7 @@ func (b *Brainduino) fftloop() {
 	}
 }
 
-func (b *Brainduino) readloopX() {
+func (b *Brainduino) readloop() {
 	// assumes b.numchan == 2
 	// works with 3 tabs per sample
 	buf := make([]byte, 14)
@@ -198,67 +198,6 @@ func (b *Brainduino) readloopX() {
 				chans[0][ctr%6] = val
 				ctr++
 			} else if (tabctr == 2 || tabctr == 3) && b.isdatabyte(val) {
-				chans[1][ctr%6] = val
-				ctr++
-			}
-		}
-	}
-}
-
-func (b *Brainduino) readloop() {
-	// assumes b.numchan == 2
-	buf := make([]byte, 14)
-	chans := make([][]byte, b.numchan)
-	for i := 0; i < b.numchan; i++ {
-		chans[i] = make([]byte, b.wordsize)
-	}
-
-	firsthalf := true
-	incmdseq := false
-	ctr := 0
-
-	ts := time.Now()
-	var seqnum uint
-	for {
-		n, err := b.Read(buf)
-		if err != nil {
-			fmt.Printf("Failed to read brainduino: %s\n", err)
-			continue
-		}
-		ts = time.Now()
-		for _, val := range buf[:n] {
-			if !b.isdatabyte(val) {
-				incmdseq = true
-				continue
-			}
-
-			if incmdseq && val == '\x0D' {
-				incmdseq = false
-				continue
-			}
-
-			if val == '\r' {
-				sample := Sample{
-					Name:           "sample",
-					Channels:       make([]float64, b.numchan),
-					Timestamp:      ts,
-					SequenceNumber: seqnum,
-				}
-				for i := 0; i < b.numchan; i++ {
-					sample.Channels[i] = b.adcnorm(b.offsetBinaryToInt(chans[i]))
-					chans[i] = []byte{'\x00', '\x00', '\x00', '\x00', '\x00', '\x00'}
-				}
-				b.rawBroadcaster.Submit(sample)
-				seqnum++
-				ctr = 0
-				firsthalf = true
-			} else if val == '\t' {
-				firsthalf = false
-				ctr = 0
-			} else if firsthalf && b.isdatabyte(val) {
-				chans[0][ctr%6] = val
-				ctr++
-			} else if b.isdatabyte(val) {
 				chans[1][ctr%6] = val
 				ctr++
 			}
