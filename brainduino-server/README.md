@@ -1,13 +1,25 @@
 Operating instructions
 ======================
-
+Build and run the webserver
 ```
-cd ~/go/src/github.com/Micah1/neurotech/brainduino-server
+cd ~/go/src/github.com/Micah1/neurotech/brainduino-server/webserver
 git pull origin master
 dep ensure
 go build
-sudo ./brainduino-server --url 0.0.0.0:80
+sudo ./webserver --url 0.0.0.0:80
 ```
+
+Build and run the webserver
+```
+cd ~/go/src/github.com/Micah1/neurotech/brainduino-server/brainduino
+git pull origin master
+dep ensure
+go build
+sudo ./brainduino --url 0.0.0.0:80
+```
+
+index.html location
+`~/go/src/github.com/Micah1/neurotech/brainduino-server/brainduino/static/views/index.html`
 
 To commit changes to github at the end of the night
 ```
@@ -56,8 +68,8 @@ Example websocket event JSON:
 ```
 
 
-For details see `./brainduino-server --help`
+For details see `./brainduino --help` or `./webserver --help`
 
-All files in `~/go/src/github.com/Micah1/neurotech/brainduino-server/static` are served upon request by the brainduino-server program. For example, when the browser issues the following request `GET localhost:8080/static/index.html`, brainduino-server will serve the index.html file. `GET localhost:8080` does the same thing. `GET localhost:8080/chartsngraphs` is equivalent to `GET localhost:8080/static/chartsngraphs.html`.
+All files in `~/go/src/github.com/Micah1/neurotech/brainduino-server/webserver/static/views` are served upon request by the brainduino-server program. For example, when the browser issues the following request `GET localhost:8080/static/index.html`, brainduino-server will serve the index.html file. `GET localhost:8080` does the same thing. `GET localhost:8080/chartsngraphs` is equivalent to `GET localhost:8080/static/chartsngraphs.html`.
 
 For writting commands to the braindunio try `POST localhost:8080/command/S`. For a full list of brainduino commands see https://github.com/Micah1/neurotech.
