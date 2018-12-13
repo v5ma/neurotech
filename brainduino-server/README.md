@@ -9,7 +9,7 @@ go build
 sudo ./webserver --url 0.0.0.0:80
 ```
 
-Build and run the webserver
+Build and run the brainduino
 ```
 cd ~/go/src/github.com/Micah1/neurotech/brainduino-server/brainduino
 git pull origin master
