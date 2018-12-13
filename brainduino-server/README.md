@@ -5,22 +5,21 @@ Update code
 ```
 cd ~/go/src/github.com/Micah1/neurotech/
 git pull origin master
+dep ensure
 ```
 
-Update webserver dependencies, build and run
+Build and run webserver
 ```
 cd ~/go/src/github.com/Micah1/neurotech/brainduino-server/webserver
-dep ensure
 go build
 sudo ./webserver --url 0.0.0.0:80
 ```
 
-Update brainduino dependencies, build and run
+Build and run Brainduino
 ```
 cd ~/go/src/github.com/Micah1/neurotech/brainduino-server/brainduino
-dep ensure
 go build
-sudo ./brainduino --url 0.0.0.0:80
+sudo ./brainduino --url 0.0.0.0:80 # alternatively sudo ./brainduino --url ml.sensorium.space
 ```
 
 index.html location
