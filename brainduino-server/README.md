@@ -1,18 +1,23 @@
 Operating instructions
 ======================
-Build and run the webserver
+
+Update code
+```
+cd ~/go/src/github.com/Micah1/neurotech/
+git pull origin master
+```
+
+Update webserver dependencies, build and run
 ```
 cd ~/go/src/github.com/Micah1/neurotech/brainduino-server/webserver
-git pull origin master
 dep ensure
 go build
 sudo ./webserver --url 0.0.0.0:80
 ```
 
-Build and run the brainduino
+Update brainduino dependencies, build and run
 ```
 cd ~/go/src/github.com/Micah1/neurotech/brainduino-server/brainduino
-git pull origin master
 dep ensure
 go build
 sudo ./brainduino --url 0.0.0.0:80
