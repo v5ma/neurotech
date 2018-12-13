@@ -19,7 +19,7 @@ sudo ./brainduino --url 0.0.0.0:80
 ```
 
 index.html location
-`~/go/src/github.com/Micah1/neurotech/brainduino-server/brainduino/static/views/index.html`
+`~/go/src/github.com/Micah1/neurotech/brainduino-server/webserver/static/views/index.html`
 
 To commit changes to github at the end of the night
 ```
