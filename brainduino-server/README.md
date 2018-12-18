@@ -12,18 +12,21 @@ Build and run webserver
 ```
 cd ~/go/src/github.com/Micah1/neurotech/brainduino-server/webserver
 go build
-sudo ./webserver --url 0.0.0.0:80
+sudo ./webserver -addr 10.20.1.164:80
 ```
 
 Build and run Brainduino
 ```
 cd ~/go/src/github.com/Micah1/neurotech/brainduino-server/brainduino
 go build
-sudo ./brainduino --url 0.0.0.0:80 # alternatively sudo ./brainduino --url ml.sensorium.space
+sudo ./brainduino -addr 10.20.1.164:80 # alternatively sudo ./brainduino --url ml.sensorium.space
 ```
 
 index.html location
 `~/go/src/github.com/Micah1/neurotech/brainduino-server/webserver/static/views/index.html`
+
+load in browser
+`http://10.20.1.164:80`
 
 To commit changes to github at the end of the night
 ```
