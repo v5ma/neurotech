@@ -330,6 +330,7 @@
     "github.com/dustin/go-broadcast",
     "github.com/gorilla/websocket",
     "github.com/jacobsa/go-serial/serial",
+    "github.com/kataras/golog",
     "github.com/kataras/iris",
     "github.com/kataras/iris/middleware/logger",
     "github.com/kataras/iris/websocket",

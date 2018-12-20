@@ -14,14 +14,24 @@ import (
 
 var (
 	addr    string
+	addrint string
+	addrext string
 	logfile string
 	LOG     *golog.Logger
 )
 
 func init() {
-	flag.StringVar(&addr, "addr", "0.0.0.0:80", "url to serve on")
+	flag.StringVar(&addr, "addr", "0.0.0.0:80", "internal url to serve on")
+	flag.StringVar(&addrint, "addrint", "", "internal url to serve on")
+	flag.StringVar(&addrext, "addrext", "", "external url to serve on")
 	flag.StringVar(&logfile, "logfile", "", "path to log file, if no path then stdout")
 	flag.Parse()
+	if addrint == "" {
+		addrint = addr
+	}
+	if addrext == "" {
+		addrext = addr
+	}
 }
 
 func main() {
@@ -71,11 +81,11 @@ func main() {
 	app.StaticWeb("/static/imgs", "./static/imgs")
 	app.RegisterView(iris.HTML("./static/views", ".html").Reload(true))
 	app.Get("/", func(ctx iris.Context) {
-		ctx.ViewData("addr", addr)
+		ctx.ViewData("addr", addrext)
 		ctx.View("index.html")
 	})
 	app.Get("/", func(ctx iris.Context) {
-		ctx.ViewData("addr", addr)
+		ctx.ViewData("addr", addrext)
 		ctx.View("chartsngraphs.html")
 	})
 
@@ -102,7 +112,7 @@ func main() {
 	app.Get("/ws/client", wscli.Handler())
 
 	defaultLogger.Info("server started")
-	app.Run(iris.Addr(addr), iris.WithConfiguration(iris.Configuration{
+	app.Run(iris.Addr(addrint), iris.WithConfiguration(iris.Configuration{
 		DisableStartupLog:   true,
 		EnableOptimizations: true,
 	}))
