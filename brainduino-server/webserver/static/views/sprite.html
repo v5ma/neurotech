@@ -55,44 +55,53 @@
 				  init: function () {
 					//up controller is down and down is up: fyi
 					this.el.addEventListener('thumbupstart', () => {
-					    VR_LOG('the laser click');
+					VR_LOG('thumbupstart ok');
 					});
 					this.el.addEventListener('thumbupend', () => {
+					VR_LOG('thumbupend ok');
 					});
 					this.el.addEventListener('thumbrightstart', () => {
-					    VR_LOG('right turn start');
+					VR_LOG('thumbrightstart ok');
 					document.querySelector('a-scene').emit("rotateright");
 					});
 					this.el.addEventListener('thumbrightend', () => {
+					VR_LOG('thumbrightend ok');
 					document.querySelectorAll('.menu_plane').forEach(function(e){
 						e.object3D.visible = true;
+						
 						});
 					});
 					this.el.addEventListener('thumbleftstart', () => {
-					    VR_LOG('left turn start');
+					VR_LOG('thumbleftstart ok');
 					document.querySelector('a-scene').emit("rotateleft");
+					
 					});
 					this.el.addEventListener('thumbleftend', () => {
+					VR_LOG('thumbleftend ok');
 					document.querySelectorAll('.menu_plane').forEach(function(e){
+						
+						
 						});
 					});
 					this.el.addEventListener('thumbdownstart', () => {
-                        VR_LOG('teleport start');
+					VR_LOG('thumbupstart ok');
 					document.querySelectorAll('.menu_plane').forEach(function(e){
 						e.object3D.visible = false;
+						
 						});
 					});
 					this.el.addEventListener('thumbdownend', () => {
-                        VR_LOG('teleport end');
+					VR_LOG('thumbupend ok');
+					
 					});
 				  }
 			});
 		
 		</script>
     <a-scene>
-        <a-assets>
-            <img id="checkers" src="https://i.imgur.com/gtLbRf4.jpg">
-        </a-assets>
+      <a-assets>
+        
+      </a-assets>
 
 		<a-entity environment="preset: tron"></a-entity>
 		
@@ -100,7 +109,7 @@
 		<a-text id="vr_console" 
 		geometry="primitive:plane; width: 0; height: 0"
 		material="side:double; color: #000000"
-		text="font:dejavu; baseline:bottom; anchor:center; align:center; value:Neurohaxor VR Console"
+		text="font:dejavu; baseline:bottom; anchor:center; align:center; value:VR Console"
 		position="0 5 -5"></a-text>
       
 
@@ -269,13 +278,12 @@
 	//scene.object3D.add(scatter_plot)
 	plot_container = document.getElementById("scatter_plot_container")
 	plot_container.object3D.add(scatter_plot)
-    
-    function create_box_point() {
-		s = new THREE.Mesh(
-            new THREE.PlaneBufferGeometry( 1, 1, 1 ),
-            new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} ),
-            )
-		
+	function create_box_point(radius) {
+		s = new THREE.Sprite(
+            //alternative add this: new THREE.TextureLoader().load("sprite.png");
+            //alternative replace below with this: new THREE.SpriteMaterial({map:spriteMap, color: 0xffffff};
+			new THREE.SpriteMaterial({color: 0xffffff};
+		))
 		scatter_plot.add(s)
 		return s
 	}
@@ -283,9 +291,8 @@
 	for (i=0; i < 40; i++) {
 		for (j=0; j < 10; j++) {
 			box = create_box_point(0.1)
-            scatter_plot_points.push(box)
-            box.rotation.y = 90
-            box.position.z = 5 - i * .3
+			scatter_plot_points.push(box)
+			box.position.z = 15 - i * .3
 			box.position.x = j - 4.5
 			// giving boxes names so we can add sound to specific boxes, find by name, search for box 0:0 (scene.findObjectByName('0:0')
             // if I had spheres before i I could append "spheres" in front of i for example
@@ -330,7 +337,7 @@
 	// you can then get a color for a specific value like Lut.getColor(15.67)
 	colors_lut = new THREE.Lut('rainbow', 512)
 	colors_lut.setMin(0)
-	colors_lut.setMax(4)
+	colors_lut.setMax(6.5)
 
 	ws.onmessage = function (event) {
 	
