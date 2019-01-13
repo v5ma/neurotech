@@ -12,21 +12,21 @@ Build and run webserver
 ```
 cd ~/go/src/github.com/Micah1/neurotech/brainduino-server/webserver
 go build
-sudo ./webserver -addr 10.20.1.164:80
+sudo ./webserver -addr 10.20.7.127:80
 ```
 
 Build and run Brainduino
 ```
 cd ~/go/src/github.com/Micah1/neurotech/brainduino-server/brainduino
 go build
-sudo ./brainduino -addr 10.20.1.164:80 # alternatively sudo ./brainduino --url ml.sensorium.space
+sudo ./brainduino -addr 10.20.7.127:80 # alternatively sudo ./brainduino --url ml.sensorium.space
 ```
 
 index.html location
 `~/go/src/github.com/Micah1/neurotech/brainduino-server/webserver/static/views/index.html`
 
 load in browser
-`http://10.20.1.164:80`
+`http://10.20.7.127:80`
 
 To commit changes to github at the end of the night
 ```
@@ -76,6 +76,7 @@ Example websocket event JSON:
 
 Online Instructions
 ===================
+If the webserver errors out you can run sudo ifconfig to make sure the network broadcast port hasn't changed. It was once 10.20.1.164:80, and I think a new router installed at noise bridge caused it to change to 10.20.7.127
 
 A copy of the webserver code runs on ml.sensorium.space.
 
