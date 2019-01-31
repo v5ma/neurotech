@@ -2,8 +2,8 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Neurohaxor Scatterplot Spectrogram in WebVR</title>
-    <meta name="description" content="Hello, WebVR! • A-Frame">
+    <title>Neurohaxor: EEG in WebVR</title>
+    <meta name="description" content="Neurohaxor">
 
     <script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>
     <script src="https://threejs.org/examples/js/math/Lut.js"></script>
@@ -163,12 +163,14 @@
     </a-scene>
     
 <script>
+	window.multiplier = 100;
 	//we created a function where the audio starts in the web browser when you press k, web audio on ios does not auto play, so it will be important to include a button to start audio in WebVR
 	//we installed a new text editor called vbcode, to run it type the word "code" into the terminal, it's super sweet in terms of its debug functions
+	let notes = [852, 741, 639, 528, 417, 396, 852, 741, 639, 528, 417, 396];
+	// setInterval(() => console.log(notes), 1000);
 	function doAudioStuff() {
-		let notes = [852, 741, 639, 528, 417, 396];
 		//as a demo we overwrote the tones below
-		notes = [100, 200, 300, 400, 500]
+		// notes = [100, 200, 300, 400, 500, 852, 741, 639, 528, 417]
 		let audioContext = new (window.AudioContext || window.webkitAudioContext)();
 		window.audioContext = audioContext;
 		let masterGainNode = null;
@@ -182,7 +184,7 @@
 		// let playButton = document.querySelector(".play");
 		// playButton.onclick = togglePlay;
 		function setup() {
-			// volumeControl.addEventListener("change", changeVolume, false);
+			// volumeControl.addEventListener("change", changeVolume, false);	
 			masterGainNode = audioContext.createGain();
 			console.log(masterGainNode)
 			masterGainNode.connect(audioContext.destination);
@@ -213,11 +215,11 @@
 		accordium[2] = playTone(notes[2]);
 		accordium[3] = playTone(notes[3]);
 		accordium[4] = playTone(notes[4]);
-		accordium[5] = playTone(notes[0]);
-		accordium[6] = playTone(notes[1]);
-		accordium[7] = playTone(notes[2]);
-		accordium[8] = playTone(notes[3]);
-		accordium[9] = playTone(notes[4]);
+		accordium[5] = playTone(notes[5]);
+		accordium[6] = playTone(notes[6]);
+		accordium[7] = playTone(notes[7]);
+		accordium[8] = playTone(notes[8]);
+		accordium[9] = playTone(notes[9]);
 		function togglePlay() {
 			if(playing) {
 				for (acc of accordium) {
@@ -243,6 +245,7 @@
 	document.addEventListener("keypress", event => {
 		if(event.key == 'k') {
 			console.log("audio");
+			console.log(notes);
 			doAudioStuff();
 		}
 	})
@@ -280,6 +283,7 @@
 		return s
 	}
 	scatter_plot_points = []
+
 	for (i=0; i < 40; i++) {
 		for (j=0; j < 10; j++) {
 			box = create_box_point(0.1)
@@ -376,11 +380,19 @@
 		var rtheta = rchans.theta
 		var ldelta = lchans.delta
 		var rdelta = rchans.delta
-		
+
+		notes = [rgamma, rbeta, ralpha, rtheta, rdelta, ldelta, ltheta, lalpha, lbeta, lgamma].map(v => v*1000).map(v => v+ ((250 - v) * 2));
+		console.log(notes)
+		//notes = [ldelta, ldelta, ldelta, ldelta, ldelta, ldelta, ldelta, ldelta, ldelta, ldelta].map(v => v*1000).map(v => v+ ((250 - v) * 2));
 		// preparing and storing the readings data
 		data = [rgamma, rbeta, ralpha, rtheta, rdelta, ldelta, ltheta, lalpha, lbeta, lgamma]
 		readings_history.unshift(data)
 		readings_history = readings_history.slice(0, 40)
+
+		// for (let noise_idx=0; noise_idx<10; noise_idx++) {
+		// 	let noise_value = ((lbeta+rbeta)/2) * 100;
+		// 	notes[noise_idx] = noise_value + ((250 - noise_value) * Math.pow(2, (250-noise_value)/50));
+		// }
 
 		// animating methes, points, etc.
 		for (generation = 0; generation < 40; generation++) {
@@ -402,9 +414,12 @@
 			  face.color.set(point_color) */
 
 			  // updating point cloud
+			//   let noise_value = scaled_value * 100;
+			//   notes[idx] = noise_value + ((250 - noise_value) * 2);
 			  scatter_plot_points[vertice_idx].position.y = scaled_value
 			  scatter_plot_points[vertice_idx].material.color = point_color
 			}
+			// console.log(notes);
 		}
 	
 		// this is required to notify mesh that it's internal geometry was updated. 

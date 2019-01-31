@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Hello, WebVR! • A-Frame</title>
+    <meta name="description" content="Hello, WebVR! • A-Frame">
+    <script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-thumb-controls-component@1.1.0/dist/aframe-thumb-controls-component.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/Micah1/Micah1.github.io@7c815cb4e7e1dd08dd37b54be8450702005ee73a/scripts/thy-laser-controls.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/Micah1/Micah1.github.io@44166e25baea85fa46ae4213182333eff31ef2f2/scripts/turning.js"></script>
+    <script src="https://unpkg.com/aframe-event-set-component@^4.0.0/dist/aframe-event-set-component.min.js"></script>
+    <script src="https://unpkg.com/aframe-log-component/dist/aframe-log-component.min.js"></script> 
+    <script src="https://rawgit.com/fernandojsg/aframe-teleport-controls/master/dist/aframe-teleport-controls.min.js"></script>
+    <script src="https://cdn.rawgit.com/donmccurdy/aframe-extras/v4.1.2/dist/aframe-extras.min.js"></script>
+    <script src="https://rawgit.com/feiss/aframe-environment-component/master/dist/aframe-environment-component.min.js"></script>
+<script>
+(function() {
+        var log_history = [];
+        var menu_open = false;
+        var MAX_LOGS = null;
+        function VR_LOG(data) {
+            log_history.push(JSON.stringify(data));
+            if (MAX_LOGS && log_history.length > MAX_LOGS) {
+              log_history.shift()
+            }
+            const console = document.getElementById('vr_console');
+            if (console) { console.setAttribute('value', log_history.join('\n')); }
+        } 
+         window.onerror = e => VR_LOG("error" + e);
+        const CLAMP_VELOCITY = 0.01;
+        const MAX_DELTA = 0.2;
+        const EPS = 10e-6;
+        const MAX_WARNINGS = 10;
+        const PI_2 = Math.PI / 2;
+        
+AFRAME.registerComponent("menu_plane", {
+                init: function() {
+                  this.el.addEventListener("mouseenter", (e) => {
+                   VR_LOG('catbella')
+                   
+                  });
+                  this.el.addEventListener("click",(e) => {
+                          VR_LOG('menu clicked')
+                            if (menu_open) {
+                             document.querySelectorAll('.menu_plane').forEach(function(e){
+                                  e.emit('close_the_menu');
+                  });
+                          menu_open = false;
+                              } else {
+                                VR_LOG('menu must close');
+                                document.querySelectorAll('.menu_plane').forEach(function(e){
+                                  e.emit('open_the_menu');
+                                });
+                               menu_open = true;
+                         };
+                        });
+                  
+             }
+});     
+AFRAME.registerComponent("read_shift", {
+                init: function() {
+                  this.el.addEventListener("mouseenter", (e) => {
+                   VR_LOG('I hear you')
+                   
+                  });
+                  this.el.addEventListener("click",(e) => {
+                          VR_LOG('page turn')
+                            if (menu_open) {
+                             document.querySelectorAll('.menu_plane').forEach(function(e){
+                                  e.emit('close_the_menu');
+                  });
+                          menu_open = false;
+                              } else {
+                                VR_LOG('menu must close');
+                                document.querySelectorAll('.menu_plane').forEach(function(e){
+                                  e.emit('open_the_menu');
+                                });
+                               menu_open = true;
+                         };
+                        });
+                  
+             }
+});     
+AFRAME.registerComponent('thumb-movement-controls', {
+          init: function () {
+            //up controller is down and down is up: fyi
+            this.el.addEventListener('thumbupstart', () => {
+               VR_LOG('thumbupstart ok');
+            });
+            this.el.addEventListener('thumbupend', () => {
+               VR_LOG('thumbupend ok');
+            });
+            this.el.addEventListener('thumbrightstart', () => {
+               VR_LOG('thumbrightstart ok');
+               document.querySelector('a-scene').emit("rotateright");
+            });
+            this.el.addEventListener('thumbrightend', () => {
+               VR_LOG('thumbrightend ok');
+               document.querySelectorAll('.menu_plane').forEach(function(e){
+                e.object3D.visible = true;
+                
+                 });
+            });
+            this.el.addEventListener('thumbleftstart', () => {
+               VR_LOG('thumbleftstart ok');
+               document.querySelector('a-scene').emit("rotateleft");
+               
+            });
+            this.el.addEventListener('thumbleftend', () => {
+               VR_LOG('thumbleftend ok');
+               document.querySelectorAll('.menu_plane').forEach(function(e){
+                
+                
+                 });
+            });
+            this.el.addEventListener('thumbdownstart', () => {
+               VR_LOG('thumbupstart ok');
+               document.querySelectorAll('.menu_plane').forEach(function(e){
+                e.object3D.visible = false;
+                
+                });
+            });
+            this.el.addEventListener('thumbdownend', () => {
+               VR_LOG('thumbupend ok');
+               
+            });
+        }
+});
+  
+})();
+  </script>  
+  </head>
+  <body>
+    
+<a-scene>
+ 
+  <a-assets>
+    <img id="checkers" src="https://i.imgur.com/gtLbRf4.jpg">
+</a-assets>
+  
+  <a-sky color="#000"></a-sky>
+  <a-link href="https://chip-harrier.glitch.me" title="Chip" image="#checkers" position="3 0 -10"></a-link>
+  <a-link href="https://wary-fish.glitch.me" title="Fish" image="#checkers" position="6 0 -10"></a-link>
+  <a-link href="https://puzzling-butterfly.glitch.me" title="Butterfly" image="#checkers" position="9 0 -10"></a-link>
+  <a-link href="https://marked-carriage.glitch.me" title="Marked" image="#checkers" position="12 0 -10"></a-link>
+  <a-link href="https://broad-revolve.glitch.me" title="Revolver" image="#checkers" position="15 0 -10"></a-link>
+  <a-link href="https://berry-ski.glitch.me" title="Berry" image="#checkers" position="0 0 -10"></a-link>
+  <a-link href="https://troubled-car.glitch.me" title="Car" image="#checkers" position="-3 0 -10"></a-link>
+  <a-link href="https://workable-form.glitch.me" title="Form" image="#checkers" position="-6 0 -10"></a-link>
+  <a-link href="https://pushy-interest.glitch.me" title="Pushy" image="#checkers" position="-9 0 -10"></a-link>
+  <a-link href="https://scarce-asp.glitch.me" title="ASP" image="#checkers" position="-12 0 -10"></a-link>
+  <a-link href="https://nifty-alibi.glitch.me" title="Nifty" image="#checkers" position="-15 0 -10"></a-link>
+     
+          
+      <!-- floor -->
+      <a-plane position="0 -0.5 0" width="40" height="40" color="grey" geometry="primitive: plane; width: 5000; height: 5000;" rotation="-90 0 0" material="src: #checkers; repeat: 5000 5000; transparent: true; metalness:0.6; roughness: 0.4; sphericalEnvMap: #sky;"></a-plane>
+      
+  <!-- blue start -->
+      <!-- blue start -->
+      <!-- blue 0 2 -4 folksthis is the colorful (blue) plane with text on it in front of you-->
+      <a-box>
+        <a-animation attribute="rotation" begin="click" to="0 90 0" dur="700"
+               ease="bounce"
+               fill="forwards"
+               direction="alternate"></a-animation>
+      <a-entity geometry="primitive: plane; side: both; height: 1.65; width: 3;" material="color: red" position="0 1 -2" rotation="0 0 0"
+        text="font: dejavu; color: white; width: 2.8; wrapCount: 70; value: 6dof Motion Controller tracking for Standalone VR is a hard problem. So far independent journalists can only verify that the Oculus Quest has solved it with the Constellation tracking system.
+Today we learned that the Vive Focus launches in North America and in Europe for $599. Motion Controllers made by 3rd parties will be sold separately and initially cost $199. (599 + 199 = 798).
+SVGN.io
+Nov 8, 2018
+Article by Micah Blumberg
+At AWE US 2018 I learned about a new 6dof controller tracking system that may be the only technology capable of rivaling the Oculus Quest tracking system.
+Consumers should not expect similar 6dof controller tracking systems for the Mirage Solo and from Vive’s partner companies to be on par with (par means equal to) with the offering from Oculus.
+Above is the Shift controller by FinchVR for the HTC Vive Focus $199
+Oculus Quest will ship in Spring 2019 with two motion controllers for $399 but the Constellation system Oculus developed represents a billion dollar...      
+              ">
+<a-animation attribute="position" begin="click" to="4 0 -3" dur="700"
+               ease="bounce"
+               fill="forwards"
+               direction="alternate"></a-animation>
+  </a-entity>
+      
+    
+      
+      
+        
+            <!-- blue 0 2 -4.2 folksthis is the colorful (blue) plane with text on it in front of you-->
+      <a-entity geometry="primitive: box; side: both; height: 2.5; width: 3; depth: 0.001" material="color: red" position="0 1 -2.51" rotation="0 0 0"
+        text="font: dejavu; color: black; width: 2.8; wrapCount: 80; value: 
+               investment in new technology by Facebook that brings on board people who worked on sensors at places like Qualcomm.
+So 1 Vive Focus with two 6dof Motion Controllers (made by a 3rd party) is the price of 2 Oculus Quest devices. (Oculus Quest will retail for $399 and it ships with two 6dof motion controllers) The first of Sony’s iconic portable cassette tape players “The Walkman” went on sale July 1st, 1979 for $150.
+The first Sony Walkman goes on sale
+The transistor radio was a technological marvel that put music literally into consumers' hands in the mid-1950s. It was…
+www.history.com
+The reason I am thinking about the Walkman is that it was a hit product, way before the ipod came along, before the mp3 player, before the cd-player. To me the Oculus Quest is destined to become a hit product like the Walkman back in 1980. I have an Oculus Go, and if you bring an Oculus Go to a party, a club, or any evening gathering to demo it people love it, it creates immediate good first impressions.
+By">
+      <a-animation attribute="position" begin="click" to="8 0 -3" dur="700"
+               ease="bounce"
+               fill="forwards"
+               direction="alternate"></a-animation>
+  </a-entity>
+    
+            <!-- blue 0 2 -4.8 folksthis is the colorful (blue) plane with text on it in front of you-->
+      <a-entity geometry="primitive: box; side: both; height: 2.5; width: 3; depth: 0.001" material="color: white" position="0 1 -2.3" rotation="0 0 0"
+        text="font: dejavu; color: black; width: 2.8; wrapCount: 80; value: contrast the Oculus Quest is the next level of good VR technology, going far beyond what the Oculus Go delivers. The Oculus Quest is the VR headset we have all been waiting for, not the the Vive Focus.
+The Vive Focus wants to be considered in the same league as the Oculus Quest, after all it includes the same Snapdragon 835 chipset as the Oculus Quest, but its really not, it does not for example ship with two 6dof motion controllers, it ships with 1 3dof controller. Vive will not be making their own motion controllers for the Focus instead they will be relying upon 3rd parties. That’s a very significant difference because without 1st party controllers developers will have to consider the reality that only a small percentage of Focus users will own motion controllers, and that means that many apps will be developed for a single 3dof controller. In addition developers will want to be focusing on getting their apps on the Oculus Quest for it’s lower starting price point, so I would">
+      <a-animation attribute="position" begin="click" to="12 0 -3" dur="700"
+               ease="bounce"
+               fill="forwards"
+               direction="alternate"></a-animation>
+      </a-entity>
+      
+            <!-- blue 0 2 -5 folksthis is the colorful (blue) plane with text on it in front of you-->
+      <a-entity geometry="primitive: box; side: both; height: 2.5; width: 3; depth: 0.001" material="color: white" position="0 1 -3.53" rotation="0 0 0"
+        text="font: dejavu; color: black; width: 2.8; wrapCount: 80; value: expect the Vive Focus to have fewer VR apps.
+Microsoft did a pretty good job with the Mixed Reality devices but with those you are going to notice that your controllers have a pretty limited field of view even compared to the Oculus Quest.
+There have been some rumors that the Vive Focus 3rd party controllers would use ultrasound, but that won’t be the case with the first controllers that ship by Finch VR. The Focus controllers created by Finch VR do not use ultrasound and the six dof tracking is accomplished by only the built in accelerometer and gyroscope, the same technology that’s inside a 3dof controller.
+NOLO-Motion Tracking for VR/AR
+I have also tried the Nolo VR 6dof tracking and in my humble opinion the Nolo VR product is terrible compared to the high quality experience in the Oculus Quest. The problem is that Nolo VR’s system just has too much lag which for me produced nausea and discomfort. I can’t hope for better than Nolo from any 3rd party controller developer except one:">
+      <a-animation attribute="position" begin="click" to="16 0 -3" dur="700"
+               ease="bounce"
+               fill="forwards"
+               direction="alternate"></a-animation>
+      </a-entity>
+      
+         <!-- blue 0 2 -5.4 folksthis is the colorful (blue) plane with text on it in front of you-->
+      <a-entity geometry="primitive: box; side: both; height: 2.5; width: 4; depth: 0.001" material="color: white" position="0 0 -3.54" rotation="0 0 0"
+        text="font: dejavu; color: black; width: 3.9; wrapCount: 80; value: Sixdof Space.
+At AWE US 2018 I recorded an interview with Klony Lieberman of Sixdof Space, an interview that I lost by mistake but I still want to tell you the story of what his company is working on: ultra fast 6 dof controllers that have the speed and accuracy of original HTC Vive tracking system that was developed by Valve. Fortunately AWE recorded and published his talk which you can now watch below. In the interview I learned that this technology is only designed to work indoors as it takes advantage of indoor lights..">
+      <a-animation attribute="position" begin="click" to="20 0 -3" dur="700"
+               ease="bounce"
+               fill="forwards"
+               direction="alternate"></a-animation>
+      
+      </a-entity>
+        
+        </a-box>
+    
+<!--       <a-text font="dejavu" geometry="primitive: box; width: 4; height: 4; depth: .001" position="0 0 -3.07" anchor="center" align="left" width="3.5" material="color: #8cacff"
+              value="null.">
+      <a-animation attribute="position" begin="click" to="32 0 -3" dur="700"
+               ease="bounce"
+               fill="forwards"
+               direction="alternate"></a-animation>
+      </a-text> -->
+     
+  
+  
+<!--       <a-plane position="0 2 -5" rotate="0 0 0" width="4" height="2.5" depth=".001" rotation="0 0 0" color="black" side="both">
+         <a-animation attribute="position" begin="click" to="-4 0 -3" dur="700"
+               ease="bounce"
+               fill="forwards"
+               direction="alternate"></a-animation>  
+         <a-animation attribute="scale"
+                     to="1 1 1"
+                     begin="click"
+                     dur="700"
+                     ease="bounce"
+                     fill="forwards"
+                     direction="alternate"></a-animation>
+          <a-animation attribute="rotation"
+                     to="0 45 0"
+                     begin="click"
+                     dur="700"
+                     ease="bounce"
+                     fill="forwards"
+                     direction="alternate"></a-animation>
+          </a-plane> -->
+                     
+      <a-entity id="cameraRig">
+        
+      <a-plane id="cat" class="menu_plane" side="double" visible="false" material="metalness: 0.5; roughness: 0; color: purple" position="0 0 -3" scale="1 0.5 0" rotation="-45 0 0" menu_plane>
+      </a-plane>
+        
+      <a-plane id="dog" class="menu_plane" side="double" visible="false" material="metalness: 0; roughness: 0.5; color: blue" position="3 0 0" scale="1 0.5 0" rotation="-45 -90 0"  menu_plane>
+      </a-plane>
+        
+      <a-plane id="snail" class="menu_plane" side="double" visible="false" material="metalness: 0.1; roughness: 0; color: green" position="-3 0 0" scale="1 0.5 0" rotation="-45 90 0" menu_plane>
+      </a-plane>
+      
+      <a-plane id="cloud" class="menu_plane" side="double" visible="false" material="metalness: 0; roughness: 0.1; color:red" position="0 0 3" scale="1 0.5 0" rotation="-45 -180 0" menu_plane>
+     </a-plane>
+        
+<!---
+      <a-box id="menu_plane1" class="menu_plane" position="0 0.5 -2" scale="0 0 0" rotation="0 45 0" color="#4CC3D9" shadow
+             event-set__enter="_event: mouseenter; color: #026fc9"
+             event-set__leave="_event: mouseleave; color: #4CC3D9" store>
+        
+         <a-animation attribute="position"
+               dur="1000"
+               fill="forwards"
+               to="1 .5 -2"
+               direction="normal"
+               begin="open_the_menu"></a-animation>
+        <a-animation attribute="scale"
+               dur="1000"
+               fill="forwards"
+               to="1 1 1"
+               direction="normal"
+               begin="open_the_menu"></a-animation>
+        
+        <a-animation attribute="position"
+               dur="1000"
+               fill="forwards"
+               to="0 0.5 -2"
+               direction="normal"
+               begin="close_the_menu"></a-animation>
+        <a-animation attribute="scale"
+               dur="1000"
+               fill="forwards"
+               to="0 0 0"
+               direction="normal"
+               begin="close_the_menu"></a-animation>
+      </a-box>
+      <a-box id="menu_plane2" class="menu_plane itemclass" position="0 0.5 -2" scale="0 0 0" rotation="0 45 0" color="#4CC3D9" shadow
+             event-set__enter="_event: mouseenter; color: #026fc9"
+             event-set__leave="_event: mouseleave; color: #4CC3D9" store>
+         <a-animation attribute="position"
+               dur="1000"
+               fill="forwards"
+               to="-1 .5 -2"
+               direction="normal"
+               begin="open_the_menu"></a-animation>
+        <a-animation attribute="scale"
+               dur="1000"
+               fill="forwards"
+               to="1 1 1"
+               direction="normal"
+               begin="open_the_menu"></a-animation>
+        <a-animation attribute="position"
+               dur="1000"
+               fill="forwards"
+               to="0 0.5 -2"
+               direction="normal"
+               begin="close_the_menu"></a-animation>
+        <a-animation attribute="scale"
+               dur="1000"
+               fill="forwards"
+               to="0 0 0"
+               direction="normal"
+               begin="close_the_menu"></a-animation>
+     </a-box>
+     <a-box id="menu_plane3" class="menu_plane" position="0 0.5 -2" scale="0.01 0 0" rotation="0 45 0" color="#4CC3D9" shadow
+             event-set__enter="_event: mouseenter; color: #026fc9"
+             event-set__leave="_event: mouseleave; color: #4CC3D9" store>
+        
+       <a-animation attribute="position"
+               dur="1000"
+               fill="forwards"
+               to="1 2.5 -2"
+               direction="normal"
+               begin="open_the_menu"></a-animation>
+       <a-animation attribute="scale"
+               dur="1000"
+               fill="forwards"
+               to="1 1 1"
+               direction="normal"
+               begin="open_the_menu"></a-animation>
+        <a-animation attribute="position"
+               dur="1000"
+               fill="forwards"
+               to="0 0.5 -2"
+               direction="normal"
+               begin="close_the_menu"></a-animation>
+       <a-animation attribute="scale"
+               dur="1000"
+               fill="forwards"
+               to="0 0 0"
+               direction="normal"
+               begin="close_the_menu"></a-animation>
+      </a-box>
+      <a-box id="menu_plane4" class="menu_plane" position="0 0.5 -2" scale="0 0 0" rotation="0 45 0" color="#4CC3D9" shadow
+             event-set__enter="_event: mouseenter; color: #026fc9"
+             event-set__leave="_event: mouseleave; color: #4CC3D9" store>
+        <a-animation attribute="position"
+               dur="1000"
+               fill="forwards"
+               to="-2 3.5 -6"
+               direction="normal"
+               begin="click"></a-animation>
+        <a-animation attribute="scale"
+               dur="1000"
+               fill="forwards"
+               to=".5 2 .5"
+               direction="normal"
+               begin="click"></a-animation>
+        <a-animation attribute="position"
+               dur="1000"
+               fill="forwards"
+               to="-1 2.5 -2"
+               direction="normal"
+               begin="open_the_menu"></a-animation>
+        <a-animation attribute="scale"
+               dur="1000"
+               fill="forwards"
+               to="1 1 1"
+               direction="normal"
+               begin="open_the_menu"></a-animation>
+        <a-animation attribute="position"
+               dur="1000"
+               fill="forwards"
+               to="0 0.5 -2"
+               direction="normal"
+               begin="close_the_menu"></a-animation>
+        <a-animation attribute="scale"
+               dur="1000"
+               fill="forwards"
+               to="0 0 0"
+               direction="normal"
+               begin="close_the_menu"></a-animation>
+      </a-box>-->
+                <a-entity id="cameraRig_1" character-controller="pivot: #head">
+                        
+                <a-entity id="head" camera wasd-controls look-controls><a-cursor position="0 0 0" fuse="false"></a-cursor></a-entity>
+                <a-entity teleport-controls="startEvents: thumbdownstart; endEvents: thumbdownend; cameraRig: #cameraRig; teleportOrigin: #head;"
+                          thumb-controls thumb-movement-controls
+                          my-laser-controls cursor="downEvents: thumbupstart; upEvents: thumbupend;"
+                          raycaster="objects: .clickable; .links; far: 5" line="color: blue; opacity: 1; thickness: 7"></a-entity>
+                <a-entity oculus-go-controls daydream-controls gearvr-controls></a-entity>
+                <a-entity id="left-hand"
+                            vive-controls="hand: left"
+                            oculus-touch-controls="hand: left"
+                            windows-motion-controls="hand: left"
+                            ></a-entity>
+                <a-entity id="right-hand"
+                            vive-controls="hand: right"
+                            oculus-touch-controls="hand: right"
+                            windows-motion-controls="hand: right"
+                            ></a-entity>
+                </a-entity></a-entity>
+
+<a-text id="vr_console" font="dejavu" geometry="primitive:plane; width: 4; height: 4" material="side:double; color: #000000" position="-4.5 0 -7" baseline="bottom" anchor="center" align="left" width="3.5"
+              value="Hello Sans"></a-text>
+    
+      </a-scene>
+  </body>
+</html>
+
