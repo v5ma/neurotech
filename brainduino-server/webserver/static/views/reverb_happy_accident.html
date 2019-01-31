@@ -168,6 +168,7 @@
 	//we installed a new text editor called vbcode, to run it type the word "code" into the terminal, it's super sweet in terms of its debug functions
 	let notes = [852, 741, 639, 528, 417, 396, 852, 741, 639, 528, 417, 396];
 	// setInterval(() => console.log(notes), 1000);
+	function doAudioStuff() {
 		//as a demo we overwrote the tones below
 		// notes = [100, 200, 300, 400, 500, 852, 741, 639, 528, 417]
 		let audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -205,22 +206,20 @@
 			return osc;
 		}
 		setup();
-		function doAudioStuff() {
-			var accordium = [];
-			for (i=0; i<10; i++) {
-				accordium[i] = [];
-			}
-			accordium[0] = playTone(notes[0]);
-			accordium[1] = playTone(notes[1]);
-			accordium[2] = playTone(notes[2]);
-			accordium[3] = playTone(notes[3]);
-			accordium[4] = playTone(notes[4]);
-			accordium[5] = playTone(notes[5]);
-			accordium[6] = playTone(notes[6]);
-			accordium[7] = playTone(notes[7]);
-			accordium[8] = playTone(notes[8]);
-			accordium[9] = playTone(notes[9]);
-		};
+		var accordium = [];
+		for (i=0; i<10; i++) {
+			accordium[i] = [];
+		}
+		accordium[0] = playTone(notes[0]);
+		accordium[1] = playTone(notes[1]);
+		accordium[2] = playTone(notes[2]);
+		accordium[3] = playTone(notes[3]);
+		accordium[4] = playTone(notes[4]);
+		accordium[5] = playTone(notes[5]);
+		accordium[6] = playTone(notes[6]);
+		accordium[7] = playTone(notes[7]);
+		accordium[8] = playTone(notes[8]);
+		accordium[9] = playTone(notes[9]);
 		function togglePlay() {
 			if(playing) {
 				for (acc of accordium) {
@@ -240,7 +239,8 @@
 				accordium[9] = playTone(notes[9]);
 				playing = true;
 			}
-		};
+		}
+	}
 	//press k after you load the webpage to start audio
 	document.addEventListener("keypress", event => {
 		if(event.key == 'k') {
@@ -382,7 +382,6 @@
 		var rdelta = rchans.delta
 
 		notes = [rgamma, rbeta, ralpha, rtheta, rdelta, ldelta, ltheta, lalpha, lbeta, lgamma].map(v => v*1000).map(v => v+ ((250 - v) * 2));
-		//doAudioStuff();
 		console.log(notes)
 		//notes = [ldelta, ldelta, ldelta, ldelta, ldelta, ldelta, ldelta, ldelta, ldelta, ldelta].map(v => v*1000).map(v => v+ ((250 - v) * 2));
 		// preparing and storing the readings data
